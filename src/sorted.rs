@@ -1,22 +1,25 @@
 use std::collections::PriorityQueue;
 use std::default::Default;
 
-use Crdt;
+use Commute;
 
-/// Compute the exact median on a stream of data. (This has time complexity
-/// `O(nlogn)` and space complexity `O(n)`.)
+/// Compute the exact median on a stream of data.
+///
+/// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
 pub fn median<T: Ord + ToPrimitive + Clone, I: Iterator<T>>(mut it: I) -> f64 {
     it.collect::<Sorted<T>>().median()
 }
 
-/// Compute the exact mode on a stream of data. (This has time complexity
-/// `O(nlogn)` and space complexity `O(n)`.)
+/// Compute the exact mode on a stream of data.
+///
+/// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
 ///
 /// If the data does not have a mode, then `None` is returned.
 pub fn mode<T: Ord + Clone, I: Iterator<T>>(mut it: I) -> Option<T> {
     it.collect::<Sorted<T>>().mode()
 }
 
+/// A commutative data structure for sorted sequences of data.
 #[deriving(Clone)]
 pub struct Sorted<T> {
     data: PriorityQueue<T>,
@@ -37,6 +40,12 @@ impl<T: Ord> Sorted<T> {
 impl<T: Ord + Clone> Sorted<T> {
     /// Returns the mode of the data.
     pub fn mode(&self) -> Option<T> {
+        // This approach to computing the mode works very nicely when the
+        // number of samples is large and is close to its cardinality.
+        // In other cases, a hashmap would be much better.
+        // But really, how can we know this when given an arbitrary stream?
+        // Might just switch to a hashmap to track frequencies. That would also
+        // be generally useful for discovering the cardinality of a sample.
         if self.len() == 0 {
             return None;
         }
@@ -82,7 +91,7 @@ impl<T: Ord + ToPrimitive + Clone> Sorted<T> {
     }
 }
 
-impl<T: Ord> Crdt for Sorted<T> {
+impl<T: Ord> Commute for Sorted<T> {
     fn merge(&mut self, v: Sorted<T>) {
         // should this be `into_sorted_vec`?
         self.extend(v.data.into_vec().into_iter());
@@ -98,7 +107,7 @@ impl<T: Ord> Collection for Sorted<T> {
 }
 
 impl<T: Ord> Mutable for Sorted<T> {
-    fn clear(&mut self) { self.data.clear() }
+    fn clear(&mut self) { self.data.clear(); }
 }
 
 impl<T: Ord> FromIterator<T> for Sorted<T> {

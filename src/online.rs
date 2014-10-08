@@ -2,7 +2,7 @@ use std::default::Default;
 use std::f64;
 use std::fmt;
 
-use Crdt;
+use Commute;
 
 /// Compute the standard deviation of a stream in constant space.
 pub fn stddev<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
@@ -89,7 +89,7 @@ impl OnlineStats {
     }
 }
 
-impl Crdt for OnlineStats {
+impl Commute for OnlineStats {
     fn merge(&mut self, v: OnlineStats) {
         // Taken from: http://goo.gl/iODi28
         let (s1, s2) = (self.size as f64, v.size as f64);
@@ -159,7 +159,7 @@ impl<T: ToPrimitive> Extendable<T> for OnlineStats {
 
 #[cfg(test)]
 mod test {
-    use {Crdt, merge_all};
+    use {Commute, merge_all};
     use super::OnlineStats;
 
     #[test]
