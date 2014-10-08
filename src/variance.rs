@@ -25,6 +25,8 @@ pub struct Variance {
     size: u64,
     mean: f64,
     variance: f64,
+    min: f64,
+    max: f64,
 }
 
 impl Variance {
@@ -55,9 +57,25 @@ impl Variance {
         self.variance
     }
 
+    /// Return the current minimum value.
+    pub fn min(&self) -> f64 {
+        self.min
+    }
+
+    /// Return the current maximum value.
+    pub fn max(&self) -> f64 {
+        self.max
+    }
+
     /// Add a new sample.
     pub fn add<T: ToPrimitive>(&mut self, sample: T) {
         let sample = sample.to_f64().unwrap();
+        if sample < self.min {
+            self.min = sample;
+        }
+        if sample > self.max {
+            self.max = sample;
+        }
 
         // Taken from: http://goo.gl/JKeqvj
         // See also: http://goo.gl/qTtI3V
@@ -72,7 +90,7 @@ impl Variance {
 }
 
 impl Crdt for Variance {
-    fn merge(&mut self, v: &Variance) {
+    fn merge(&mut self, v: Variance) {
         // Taken from: http://goo.gl/iODi28
         let (s1, s2) = (self.size as f64, v.size as f64);
         let meandiffsq = (self.mean - v.mean) * (self.mean - v.mean);
@@ -93,6 +111,8 @@ impl Default for Variance {
             size: 0,
             mean: 0.0,
             variance: 0.0,
+            min: 0.0,
+            max: 0.0,
         }
     }
 }
@@ -116,12 +136,14 @@ impl Mutable for Variance {
         self.size = 0;
         self.mean = 0.0;
         self.variance = 0.0;
+        self.min = 0.0;
+        self.max = 0.0;
     }
 }
 
 impl<T: ToPrimitive> FromIterator<T> for Variance {
     fn from_iter<I: Iterator<T>>(it: I) -> Variance {
-        let mut v: Variance = Default::default();
+        let mut v = Variance::new();
         v.extend(it);
         v
     }
@@ -148,7 +170,7 @@ mod test {
         let var1 = Variance::from_slice([1u, 2, 3]);
         let var2 = Variance::from_slice([2u, 4, 6]);
         let mut got = var1.clone();
-        got.merge(&var2);
+        got.merge(var2);
         assert_eq!(expected.stddev(), got.stddev());
     }
 
