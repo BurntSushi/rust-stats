@@ -4,18 +4,22 @@ use std::fmt;
 
 use Crdt;
 
-pub fn stddev<T: ToPrimitive, I: Iterator<T>>(it: I) -> f64 {
-    let mut v = Variance::new();
-    v.adds(it);
-    v.stddev()
+/// Compute the standard deviation of a stream in constant space.
+pub fn stddev<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
+    it.collect::<Variance>().stddev()
 }
 
-pub fn variance<T: ToPrimitive, I: Iterator<T>>(it: I) -> f64 {
-    let mut v = Variance::new();
-    v.adds(it);
-    v.variance()
+/// Compute the variance of a stream in constant space.
+pub fn variance<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
+    it.collect::<Variance>().variance()
 }
 
+/// Compute the mean of a stream in constant space.
+pub fn mean<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
+    it.collect::<Variance>().mean()
+}
+
+/// Online state for computing mean, variance and standard deviation.
 #[deriving(Clone)]
 pub struct Variance {
     size: u64,
@@ -23,41 +27,35 @@ pub struct Variance {
     variance: f64,
 }
 
-impl Default for Variance {
-    fn default() -> Variance {
-        Variance {
-            size: 0,
-            mean: 0.0,
-            variance: 0.0,
-        }
-    }
-}
-
-impl fmt::Show for Variance {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", f64::to_str_digits(self.stddev(), 10))
-    }
-}
-
 impl Variance {
+    /// Create initial state.
+    ///
+    /// Population size, variance and mean are set to `0`.
     pub fn new() -> Variance {
         Default::default()
     }
 
+    /// Initializes variance from a sample.
     pub fn from_slice<T: ToPrimitive>(samples: &[T]) -> Variance {
-        let mut v: Variance = Default::default();
-        v.adds(samples.iter().map(|n| n.to_f64().unwrap()));
-        v
+        samples.iter().map(|n| n.to_f64().unwrap()).collect()
     }
 
+    /// Return the current mean.
+    pub fn mean(&self) -> f64 {
+        self.mean
+    }
+
+    /// Return the current standard deviation.
     pub fn stddev(&self) -> f64 {
         self.variance.sqrt()
     }
 
+    /// Return the current variance.
     pub fn variance(&self) -> f64 {
         self.variance
     }
 
+    /// Add a new sample.
     pub fn add<T: ToPrimitive>(&mut self, sample: T) {
         let sample = sample.to_f64().unwrap();
 
@@ -70,12 +68,6 @@ impl Variance {
         self.mean += (sample - oldmean) / (self.size as f64);
         self.variance = (prevq + (sample - oldmean) * (sample - self.mean))
                         / (self.size as f64);
-    }
-
-    pub fn adds<T: ToPrimitive, I: Iterator<T>>(&mut self, mut samples: I) {
-        for sample in samples {
-            self.add(sample);
-        }
     }
 }
 
@@ -92,6 +84,54 @@ impl Crdt for Variance {
         self.size += v.size;
         self.mean = mean;
         self.variance = var;
+    }
+}
+
+impl Default for Variance {
+    fn default() -> Variance {
+        Variance {
+            size: 0,
+            mean: 0.0,
+            variance: 0.0,
+        }
+    }
+}
+
+impl fmt::Show for Variance {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} +/- {}",
+               f64::to_str_digits(self.mean(), 10),
+               f64::to_str_digits(self.stddev(), 10))
+    }
+}
+
+impl Collection for Variance {
+    fn len(&self) -> uint {
+        self.size as uint
+    }
+}
+
+impl Mutable for Variance {
+    fn clear(&mut self) {
+        self.size = 0;
+        self.mean = 0.0;
+        self.variance = 0.0;
+    }
+}
+
+impl<T: ToPrimitive> FromIterator<T> for Variance {
+    fn from_iter<I: Iterator<T>>(it: I) -> Variance {
+        let mut v: Variance = Default::default();
+        v.extend(it);
+        v
+    }
+}
+
+impl<T: ToPrimitive> Extendable<T> for Variance {
+    fn extend<I: Iterator<T>>(&mut self, mut it: I) {
+        for sample in it {
+            self.add(sample)
+        }
     }
 }
 
