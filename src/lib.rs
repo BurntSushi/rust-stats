@@ -9,5 +9,5 @@ pub fn merge_all<T: Crdt, I: Iterator<T>>(mut it: I) -> T {
     it.fold(init, |mut v1, v2| { v1.merge(v2); v1 })
 }
 
+pub mod online;
 pub mod sorted;
-pub mod variance;

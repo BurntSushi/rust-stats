@@ -6,22 +6,22 @@ use Crdt;
 
 /// Compute the standard deviation of a stream in constant space.
 pub fn stddev<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
-    it.collect::<Variance>().stddev()
+    it.collect::<OnlineStats>().stddev()
 }
 
 /// Compute the variance of a stream in constant space.
 pub fn variance<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
-    it.collect::<Variance>().variance()
+    it.collect::<OnlineStats>().variance()
 }
 
 /// Compute the mean of a stream in constant space.
 pub fn mean<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
-    it.collect::<Variance>().mean()
+    it.collect::<OnlineStats>().mean()
 }
 
 /// Online state for computing mean, variance and standard deviation.
 #[deriving(Clone)]
-pub struct Variance {
+pub struct OnlineStats {
     size: u64,
     mean: f64,
     variance: f64,
@@ -29,16 +29,16 @@ pub struct Variance {
     max: f64,
 }
 
-impl Variance {
+impl OnlineStats {
     /// Create initial state.
     ///
     /// Population size, variance and mean are set to `0`.
-    pub fn new() -> Variance {
+    pub fn new() -> OnlineStats {
         Default::default()
     }
 
     /// Initializes variance from a sample.
-    pub fn from_slice<T: ToPrimitive>(samples: &[T]) -> Variance {
+    pub fn from_slice<T: ToPrimitive>(samples: &[T]) -> OnlineStats {
         samples.iter().map(|n| n.to_f64().unwrap()).collect()
     }
 
@@ -89,8 +89,8 @@ impl Variance {
     }
 }
 
-impl Crdt for Variance {
-    fn merge(&mut self, v: Variance) {
+impl Crdt for OnlineStats {
+    fn merge(&mut self, v: OnlineStats) {
         // Taken from: http://goo.gl/iODi28
         let (s1, s2) = (self.size as f64, v.size as f64);
         let meandiffsq = (self.mean - v.mean) * (self.mean - v.mean);
@@ -105,9 +105,9 @@ impl Crdt for Variance {
     }
 }
 
-impl Default for Variance {
-    fn default() -> Variance {
-        Variance {
+impl Default for OnlineStats {
+    fn default() -> OnlineStats {
+        OnlineStats {
             size: 0,
             mean: 0.0,
             variance: 0.0,
@@ -117,7 +117,7 @@ impl Default for Variance {
     }
 }
 
-impl fmt::Show for Variance {
+impl fmt::Show for OnlineStats {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} +/- {}",
                f64::to_str_digits(self.mean(), 10),
@@ -125,13 +125,13 @@ impl fmt::Show for Variance {
     }
 }
 
-impl Collection for Variance {
+impl Collection for OnlineStats {
     fn len(&self) -> uint {
         self.size as uint
     }
 }
 
-impl Mutable for Variance {
+impl Mutable for OnlineStats {
     fn clear(&mut self) {
         self.size = 0;
         self.mean = 0.0;
@@ -141,15 +141,15 @@ impl Mutable for Variance {
     }
 }
 
-impl<T: ToPrimitive> FromIterator<T> for Variance {
-    fn from_iter<I: Iterator<T>>(it: I) -> Variance {
-        let mut v = Variance::new();
+impl<T: ToPrimitive> FromIterator<T> for OnlineStats {
+    fn from_iter<I: Iterator<T>>(it: I) -> OnlineStats {
+        let mut v = OnlineStats::new();
         v.extend(it);
         v
     }
 }
 
-impl<T: ToPrimitive> Extendable<T> for Variance {
+impl<T: ToPrimitive> Extendable<T> for OnlineStats {
     fn extend<I: Iterator<T>>(&mut self, mut it: I) {
         for sample in it {
             self.add(sample)
@@ -160,15 +160,15 @@ impl<T: ToPrimitive> Extendable<T> for Variance {
 #[cfg(test)]
 mod test {
     use {Crdt, merge_all};
-    use super::Variance;
+    use super::OnlineStats;
 
     #[test]
     fn stddev() {
         // TODO: Convert this to a quickcheck test.
-        let expected = Variance::from_slice([1u, 2, 3, 2, 4, 6]);
+        let expected = OnlineStats::from_slice([1u, 2, 3, 2, 4, 6]);
 
-        let var1 = Variance::from_slice([1u, 2, 3]);
-        let var2 = Variance::from_slice([2u, 4, 6]);
+        let var1 = OnlineStats::from_slice([1u, 2, 3]);
+        let var2 = OnlineStats::from_slice([2u, 4, 6]);
         let mut got = var1.clone();
         got.merge(var2);
         assert_eq!(expected.stddev(), got.stddev());
@@ -177,12 +177,12 @@ mod test {
     #[test]
     fn stddev_many() {
         // TODO: Convert this to a quickcheck test.
-        let expected = Variance::from_slice([1u, 2, 3, 2, 4, 6, 3, 6, 9]);
+        let expected = OnlineStats::from_slice([1u, 2, 3, 2, 4, 6, 3, 6, 9]);
 
         let vars = vec![
-            Variance::from_slice([1u, 2, 3]),
-            Variance::from_slice([2u, 4, 6]),
-            Variance::from_slice([3u, 6, 9]),
+            OnlineStats::from_slice([1u, 2, 3]),
+            OnlineStats::from_slice([2u, 4, 6]),
+            OnlineStats::from_slice([3u, 6, 9]),
         ];
         assert_eq!(expected.stddev(), merge_all(vars.into_iter()).stddev());
     }
