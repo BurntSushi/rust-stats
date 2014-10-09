@@ -80,6 +80,8 @@ impl<T: Ord + ToPrimitive + Clone> Sorted<T> {
     pub fn median(&self) -> f64 {
         // Grr. The only way to avoid the alloc here is to take `self` by
         // value. Could return `(f64, Sorted<T>)`, but that seems a bit weird.
+        //
+        // NOTE: Can `std::mem::swap` help us here?
         let data = self.data.clone().into_sorted_vec();
         if data.len() % 2 == 0 {
             let v1 = data[(data.len() / 2) - 1].to_f64().unwrap();
