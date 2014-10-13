@@ -5,6 +5,7 @@ use std::default::Default;
 use Commute;
 
 /// A commutative data structure for exact frequency counts.
+#[deriving(Clone)]
 pub struct Frequencies<T> {
     data: HashMap<T, u64>,
 }
@@ -31,6 +32,18 @@ impl<T: Eq + Hash> Frequencies<T> {
     /// Return the cardinality (number of unique elements) in the data.
     pub fn cardinality(&self) -> u64 {
         self.len() as u64
+    }
+
+    /// Returns the mode if one exists.
+    pub fn mode(&self) -> Option<&T> {
+        let counts = self.most_frequent();
+        if counts.is_empty() {
+            None
+        } else if counts.len() >= 2 && counts[0].val1() == counts[1].val1() {
+            None
+        } else {
+            Some(counts[0].val0())
+        }
     }
 
     /// Return a `Vec` of elements and their corresponding counts in

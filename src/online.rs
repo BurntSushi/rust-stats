@@ -25,8 +25,6 @@ pub struct OnlineStats {
     size: u64,
     mean: f64,
     variance: f64,
-    min: f64,
-    max: f64,
 }
 
 impl OnlineStats {
@@ -57,26 +55,9 @@ impl OnlineStats {
         self.variance
     }
 
-    /// Return the current minimum value.
-    pub fn min(&self) -> f64 {
-        self.min
-    }
-
-    /// Return the current maximum value.
-    pub fn max(&self) -> f64 {
-        self.max
-    }
-
     /// Add a new sample.
     pub fn add<T: ToPrimitive>(&mut self, sample: T) {
         let sample = sample.to_f64().unwrap();
-        if sample < self.min {
-            self.min = sample;
-        }
-        if sample > self.max {
-            self.max = sample;
-        }
-
         // Taken from: http://goo.gl/JKeqvj
         // See also: http://goo.gl/qTtI3V
         let oldmean = self.mean;
@@ -86,6 +67,13 @@ impl OnlineStats {
         self.mean += (sample - oldmean) / (self.size as f64);
         self.variance = (prevq + (sample - oldmean) * (sample - self.mean))
                         / (self.size as f64);
+    }
+
+    /// Add a new NULL value to the population.
+    ///
+    /// This increases the population size by `1`.
+    pub fn add_null(&mut self) {
+        self.size += 1;
     }
 }
 
@@ -111,8 +99,6 @@ impl Default for OnlineStats {
             size: 0,
             mean: 0.0,
             variance: 0.0,
-            min: 0.0,
-            max: 0.0,
         }
     }
 }
@@ -136,8 +122,6 @@ impl Mutable for OnlineStats {
         self.size = 0;
         self.mean = 0.0;
         self.variance = 0.0;
-        self.min = 0.0;
-        self.max = 0.0;
     }
 }
 
@@ -184,6 +168,7 @@ mod test {
             OnlineStats::from_slice([2u, 4, 6]),
             OnlineStats::from_slice([3u, 6, 9]),
         ];
-        assert_eq!(expected.stddev(), merge_all(vars.into_iter()).stddev());
+        assert_eq!(expected.stddev(),
+                   merge_all(vars.into_iter()).unwrap().stddev());
     }
 }

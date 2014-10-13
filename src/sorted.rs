@@ -6,7 +6,7 @@ use Commute;
 /// Compute the exact median on a stream of data.
 ///
 /// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
-pub fn median<T: Ord + ToPrimitive + Clone, I: Iterator<T>>(mut it: I) -> f64 {
+pub fn median<T: PartialOrd + ToPrimitive + Clone, I: Iterator<T>>(mut it: I) -> f64 {
     it.collect::<Sorted<T>>().median()
 }
 
@@ -15,17 +15,41 @@ pub fn median<T: Ord + ToPrimitive + Clone, I: Iterator<T>>(mut it: I) -> f64 {
 /// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
 ///
 /// If the data does not have a mode, then `None` is returned.
-pub fn mode<T: Ord + Clone, I: Iterator<T>>(mut it: I) -> Option<T> {
+pub fn mode<T: PartialOrd + Clone, I: Iterator<T>>(mut it: I) -> Option<T> {
     it.collect::<Sorted<T>>().mode()
 }
 
-/// A commutative data structure for sorted sequences of data.
-#[deriving(Clone)]
-pub struct Sorted<T> {
-    data: PriorityQueue<T>,
+/// Partial wraps a type that satisfies `PartialOrd` and implements `Ord`.
+///
+/// This allows types like `f64` to be used in data structures that require
+/// `Ord`. When an ordering is not defined, an arbitrary order is returned.
+#[deriving(Clone, PartialEq, PartialOrd)]
+struct Partial<T>(T);
+
+impl<T: PartialEq> Eq for Partial<T> {}
+
+impl<T: PartialOrd> Ord for Partial<T> {
+    fn cmp(&self, other: &Partial<T>) -> Ordering {
+        self.partial_cmp(other).unwrap_or(Less)
+    }
 }
 
-impl<T: Ord> Sorted<T> {
+impl<T: ToPrimitive> ToPrimitive for Partial<T> {
+    fn to_i64(&self) -> Option<i64> { self.0.to_i64() }
+    fn to_u64(&self) -> Option<u64> { self.0.to_u64() }
+}
+
+/// A commutative data structure for sorted sequences of data.
+///
+/// Note that this works on types that do not define a total ordering like
+/// `f32` and `f64`. Then an ordering is not defined, an arbitrary order
+/// is returned.
+#[deriving(Clone)]
+pub struct Sorted<T> {
+    data: PriorityQueue<Partial<T>>,
+}
+
+impl<T: PartialOrd> Sorted<T> {
     /// Create initial empty state.
     pub fn new() -> Sorted<T> {
         Default::default()
@@ -33,11 +57,11 @@ impl<T: Ord> Sorted<T> {
 
     /// Add a new element to the set.
     pub fn add(&mut self, v: T) {
-        self.data.push(v)
+        self.data.push(Partial(v))
     }
 }
 
-impl<T: Ord + Clone> Sorted<T> {
+impl<T: PartialOrd + Clone> Sorted<T> {
     /// Returns the mode of the data.
     pub fn mode(&self) -> Option<T> {
         // This approach to computing the mode works very nicely when the
@@ -71,11 +95,11 @@ impl<T: Ord + Clone> Sorted<T> {
                 mode_count = 0u;
             }
         }
-        mode
+        mode.map(|p| p.0)
     }
 }
 
-impl<T: Ord + ToPrimitive + Clone> Sorted<T> {
+impl<T: PartialOrd + ToPrimitive + Clone> Sorted<T> {
     /// Returns the median of the data.
     pub fn median(&self) -> f64 {
         // Grr. The only way to avoid the alloc here is to take `self` by
@@ -93,26 +117,26 @@ impl<T: Ord + ToPrimitive + Clone> Sorted<T> {
     }
 }
 
-impl<T: Ord> Commute for Sorted<T> {
+impl<T: PartialOrd> Commute for Sorted<T> {
     fn merge(&mut self, v: Sorted<T>) {
         // should this be `into_sorted_vec`?
-        self.extend(v.data.into_vec().into_iter());
+        self.data.extend(v.data.into_vec().into_iter());
     }
 }
 
-impl<T: Ord> Default for Sorted<T> {
+impl<T: PartialOrd> Default for Sorted<T> {
     fn default() -> Sorted<T> { Sorted { data: PriorityQueue::new() } }
 }
 
-impl<T: Ord> Collection for Sorted<T> {
+impl<T: PartialOrd> Collection for Sorted<T> {
     fn len(&self) -> uint { self.data.len() }
 }
 
-impl<T: Ord> Mutable for Sorted<T> {
+impl<T: PartialOrd> Mutable for Sorted<T> {
     fn clear(&mut self) { self.data.clear(); }
 }
 
-impl<T: Ord> FromIterator<T> for Sorted<T> {
+impl<T: PartialOrd> FromIterator<T> for Sorted<T> {
     fn from_iter<I: Iterator<T>>(it: I) -> Sorted<T> {
         let mut v = Sorted::new();
         v.extend(it);
@@ -120,9 +144,9 @@ impl<T: Ord> FromIterator<T> for Sorted<T> {
     }
 }
 
-impl<T: Ord> Extendable<T> for Sorted<T> {
+impl<T: PartialOrd> Extendable<T> for Sorted<T> {
     fn extend<I: Iterator<T>>(&mut self, it: I) {
-        self.data.extend(it)
+        self.data.extend(it.map(Partial))
     }
 }
 
@@ -143,5 +167,20 @@ mod test {
         assert_eq!(mode(vec![3u, 3, 3, 4].into_iter()), Some(3));
         assert_eq!(mode(vec![4u, 3, 3, 3].into_iter()), Some(3));
         assert_eq!(mode(vec![1u, 1, 2, 3, 3].into_iter()), None);
+    }
+
+    #[test]
+    fn median_floats() {
+        assert_eq!(median(vec![3.0f64, 5.0, 7.0, 9.0].into_iter()), 6.0);
+        assert_eq!(median(vec![3.0f64, 5.0, 7.0].into_iter()), 5.0);
+    }
+
+    #[test]
+    fn mode_floats() {
+        assert_eq!(mode(vec![3.0f64, 5.0, 7.0, 9.0].into_iter()), None);
+        assert_eq!(mode(vec![3.0f64, 3.0, 3.0, 3.0].into_iter()), Some(3.0));
+        assert_eq!(mode(vec![3.0f64, 3.0, 3.0, 4.0].into_iter()), Some(3.0));
+        assert_eq!(mode(vec![4.0f64, 3.0, 3.0, 3.0].into_iter()), Some(3.0));
+        assert_eq!(mode(vec![1.0f64, 1.0, 2.0, 3.0, 3.0].into_iter()), None);
     }
 }
