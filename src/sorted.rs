@@ -1,42 +1,48 @@
 use std::collections::PriorityQueue;
 use std::default::Default;
 
-use Commute;
+use {Commute, Partial};
 
-/// Compute the exact median on a stream of data.
-///
-/// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
-pub fn median<T: PartialOrd + ToPrimitive + Clone, I: Iterator<T>>(mut it: I) -> f64 {
-    it.collect::<Sorted<T>>().median()
-}
-
-/// Compute the exact mode on a stream of data.
-///
-/// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
-///
-/// If the data does not have a mode, then `None` is returned.
-pub fn mode<T: PartialOrd + Clone, I: Iterator<T>>(mut it: I) -> Option<T> {
-    it.collect::<Sorted<T>>().mode()
-}
-
-/// Partial wraps a type that satisfies `PartialOrd` and implements `Ord`.
-///
-/// This allows types like `f64` to be used in data structures that require
-/// `Ord`. When an ordering is not defined, an arbitrary order is returned.
-#[deriving(Clone, PartialEq, PartialOrd)]
-struct Partial<T>(T);
-
-impl<T: PartialEq> Eq for Partial<T> {}
-
-impl<T: PartialOrd> Ord for Partial<T> {
-    fn cmp(&self, other: &Partial<T>) -> Ordering {
-        self.partial_cmp(other).unwrap_or(Less)
+pub fn median_on_sorted<T: PartialOrd + ToPrimitive>(data: &[T]) -> f64 {
+    if data.len() % 2 == 0 {
+        let v1 = data[(data.len() / 2) - 1].to_f64().unwrap();
+        let v2 = data[data.len() / 2].to_f64().unwrap();
+        (v1 + v2) / 2.0
+    } else {
+        data[data.len() / 2].to_f64().unwrap()
     }
 }
 
-impl<T: ToPrimitive> ToPrimitive for Partial<T> {
-    fn to_i64(&self) -> Option<i64> { self.0.to_i64() }
-    fn to_u64(&self) -> Option<u64> { self.0.to_u64() }
+pub fn mode_on_sorted<T: PartialOrd, I: Iterator<T>>(mut it: I) -> Option<T> {
+    // This approach to computing the mode works very nicely when the
+    // number of samples is large and is close to its cardinality.
+    // In other cases, a hashmap would be much better.
+    // But really, how can we know this when given an arbitrary stream?
+    // Might just switch to a hashmap to track frequencies. That would also
+    // be generally useful for discovering the cardinality of a sample.
+    let (mut mode, mut next) = (None, None);
+    let (mut mode_count, mut next_count) = (0u, 0u);
+    for x in it {
+        if mode.as_ref().map(|y| y == &x).unwrap_or(false) {
+            mode_count += 1;
+        } else if next.as_ref().map(|y| y == &x).unwrap_or(false) {
+            next_count += 1;
+        } else {
+            next = Some(x);
+            next_count = 0;
+        }
+
+        if next_count > mode_count {
+            mode = next;
+            mode_count = next_count;
+            next = None;
+            next_count = 0;
+        } else if next_count == mode_count {
+            mode = None;
+            mode_count = 0u;
+        }
+    }
+    mode
 }
 
 /// A commutative data structure for sorted sequences of data.
@@ -64,38 +70,8 @@ impl<T: PartialOrd> Sorted<T> {
 impl<T: PartialOrd + Clone> Sorted<T> {
     /// Returns the mode of the data.
     pub fn mode(&self) -> Option<T> {
-        // This approach to computing the mode works very nicely when the
-        // number of samples is large and is close to its cardinality.
-        // In other cases, a hashmap would be much better.
-        // But really, how can we know this when given an arbitrary stream?
-        // Might just switch to a hashmap to track frequencies. That would also
-        // be generally useful for discovering the cardinality of a sample.
-        if self.len() == 0 {
-            return None;
-        }
-        let (mut mode, mut next) = (None, None);
-        let (mut mode_count, mut next_count) = (0u, 0u);
-        for x in self.data.clone().into_sorted_vec().into_iter() {
-            if mode.as_ref().map(|y| y == &x).unwrap_or(false) {
-                mode_count += 1;
-            } else if next.as_ref().map(|y| y == &x).unwrap_or(false) {
-                next_count += 1;
-            } else {
-                next = Some(x);
-                next_count = 0;
-            }
-
-            if next_count > mode_count {
-                mode = next;
-                mode_count = next_count;
-                next = None;
-                next_count = 0;
-            } else if next_count == mode_count {
-                mode = None;
-                mode_count = 0u;
-            }
-        }
-        mode.map(|p| p.0)
+        let p = mode_on_sorted(self.data.clone().into_sorted_vec().into_iter());
+        p.map(|p| p.0)
     }
 }
 
@@ -107,13 +83,7 @@ impl<T: PartialOrd + ToPrimitive + Clone> Sorted<T> {
         //
         // NOTE: Can `std::mem::swap` help us here?
         let data = self.data.clone().into_sorted_vec();
-        if data.len() % 2 == 0 {
-            let v1 = data[(data.len() / 2) - 1].to_f64().unwrap();
-            let v2 = data[data.len() / 2].to_f64().unwrap();
-            (v1 + v2) / 2.0
-        } else {
-            data[data.len() / 2].to_f64().unwrap()
-        }
+        median_on_sorted(data[])
     }
 }
 
@@ -152,7 +122,16 @@ impl<T: PartialOrd> Extendable<T> for Sorted<T> {
 
 #[cfg(test)]
 mod test {
-    use super::{median, mode};
+    use super::Sorted;
+
+    fn median<T: PartialOrd + ToPrimitive + Clone, I: Iterator<T>>
+                 (mut it: I) -> f64 {
+        it.collect::<Sorted<T>>().median()
+    }
+
+    fn mode<T: PartialOrd + Clone, I: Iterator<T>>(mut it: I) -> Option<T> {
+        it.collect::<Sorted<T>>().mode()
+    }
 
     #[test]
     fn median_stream() {

@@ -1,10 +1,31 @@
 #![experimental]
-#![feature(tuple_indexing)]
+#![feature(slicing_syntax, tuple_indexing)]
 
 pub use frequency::Frequencies;
 pub use minmax::MinMax;
 pub use online::{OnlineStats, stddev, variance, mean};
-pub use sorted::{Sorted, median, mode};
+pub use sorted::Sorted;
+pub use unsorted::{Unsorted, median, mode};
+
+/// Partial wraps a type that satisfies `PartialOrd` and implements `Ord`.
+///
+/// This allows types like `f64` to be used in data structures that require
+/// `Ord`. When an ordering is not defined, an arbitrary order is returned.
+#[deriving(Clone, PartialEq, PartialOrd)]
+struct Partial<T>(pub T);
+
+impl<T: PartialEq> Eq for Partial<T> {}
+
+impl<T: PartialOrd> Ord for Partial<T> {
+    fn cmp(&self, other: &Partial<T>) -> Ordering {
+        self.partial_cmp(other).unwrap_or(Less)
+    }
+}
+
+impl<T: ToPrimitive> ToPrimitive for Partial<T> {
+    fn to_i64(&self) -> Option<i64> { self.0.to_i64() }
+    fn to_u64(&self) -> Option<u64> { self.0.to_u64() }
+}
 
 /// Defines an interface for types that have an identity and can be commuted.
 ///
@@ -77,6 +98,7 @@ mod frequency;
 mod minmax;
 mod online;
 mod sorted;
+mod unsorted;
 
 #[cfg(test)]
 mod test {
