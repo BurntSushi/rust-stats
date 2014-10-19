@@ -49,7 +49,7 @@ impl<T: PartialOrd> Commute for MinMax<T> {
     fn merge(&mut self, v: MinMax<T>) {
         self.len += v.len;
         if v.min < self.min { self.min = v.min; }
-        if v.max < self.max { self.max = v.max; }
+        if v.max > self.max { self.max = v.max; }
     }
 }
 
