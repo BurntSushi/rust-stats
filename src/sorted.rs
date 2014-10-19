@@ -3,14 +3,20 @@ use std::default::Default;
 
 use {Commute, Partial};
 
-pub fn median_on_sorted<T: PartialOrd + ToPrimitive>(data: &[T]) -> f64 {
-    if data.len() % 2 == 0 {
-        let v1 = data[(data.len() / 2) - 1].to_f64().unwrap();
-        let v2 = data[data.len() / 2].to_f64().unwrap();
-        (v1 + v2) / 2.0
-    } else {
-        data[data.len() / 2].to_f64().unwrap()
-    }
+pub fn median_on_sorted<T: PartialOrd + ToPrimitive>
+                       (data: &[T]) -> Option<f64> {
+    Some(match data.len() {
+        0 => return None,
+        1 => data[0].to_f64().unwrap(),
+        len if len % 2 == 0 => {
+            let v1 = data[(len / 2) - 1].to_f64().unwrap();
+            let v2 = data[len / 2].to_f64().unwrap();
+            (v1 + v2) / 2.0
+        }
+        len => {
+            data[len / 2].to_f64().unwrap()
+        }
+    })
 }
 
 pub fn mode_on_sorted<T: PartialOrd, I: Iterator<T>>(mut it: I) -> Option<T> {
@@ -77,7 +83,7 @@ impl<T: PartialOrd + Clone> Sorted<T> {
 
 impl<T: PartialOrd + ToPrimitive + Clone> Sorted<T> {
     /// Returns the median of the data.
-    pub fn median(&self) -> f64 {
+    pub fn median(&self) -> Option<f64> {
         // Grr. The only way to avoid the alloc here is to take `self` by
         // value. Could return `(f64, Sorted<T>)`, but that seems a bit weird.
         //
@@ -125,7 +131,7 @@ mod test {
     use super::Sorted;
 
     fn median<T: PartialOrd + ToPrimitive + Clone, I: Iterator<T>>
-                 (mut it: I) -> f64 {
+                 (mut it: I) -> Option<f64> {
         it.collect::<Sorted<T>>().median()
     }
 
@@ -135,8 +141,8 @@ mod test {
 
     #[test]
     fn median_stream() {
-        assert_eq!(median(vec![3u, 5, 7, 9].into_iter()), 6.0);
-        assert_eq!(median(vec![3u, 5, 7].into_iter()), 5.0);
+        assert_eq!(median(vec![3u, 5, 7, 9].into_iter()), Some(6.0));
+        assert_eq!(median(vec![3u, 5, 7].into_iter()), Some(5.0));
     }
 
     #[test]
@@ -150,8 +156,8 @@ mod test {
 
     #[test]
     fn median_floats() {
-        assert_eq!(median(vec![3.0f64, 5.0, 7.0, 9.0].into_iter()), 6.0);
-        assert_eq!(median(vec![3.0f64, 5.0, 7.0].into_iter()), 5.0);
+        assert_eq!(median(vec![3.0f64, 5.0, 7.0, 9.0].into_iter()), Some(6.0));
+        assert_eq!(median(vec![3.0f64, 5.0, 7.0].into_iter()), Some(5.0));
     }
 
     #[test]

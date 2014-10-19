@@ -6,7 +6,8 @@ use super::sorted::{mode_on_sorted, median_on_sorted};
 /// Compute the exact median on a stream of data.
 ///
 /// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
-pub fn median<T: PartialOrd + ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
+pub fn median<T: PartialOrd + ToPrimitive, I: Iterator<T>>
+             (mut it: I) -> Option<f64> {
     it.collect::<Unsorted<T>>().median()
 }
 
@@ -65,7 +66,7 @@ impl<T: PartialOrd + Clone> Unsorted<T> {
 
 impl<T: PartialOrd + ToPrimitive> Unsorted<T> {
     /// Returns the median of the data.
-    pub fn median(&mut self) -> f64 {
+    pub fn median(&mut self) -> Option<f64> {
         self.sort();
         median_on_sorted(self.data[])
     }
@@ -116,8 +117,8 @@ mod test {
 
     #[test]
     fn median_stream() {
-        assert_eq!(median(vec![3u, 5, 7, 9].into_iter()), 6.0);
-        assert_eq!(median(vec![3u, 5, 7].into_iter()), 5.0);
+        assert_eq!(median(vec![3u, 5, 7, 9].into_iter()), Some(6.0));
+        assert_eq!(median(vec![3u, 5, 7].into_iter()), Some(5.0));
     }
 
     #[test]
@@ -131,8 +132,8 @@ mod test {
 
     #[test]
     fn median_floats() {
-        assert_eq!(median(vec![3.0f64, 5.0, 7.0, 9.0].into_iter()), 6.0);
-        assert_eq!(median(vec![3.0f64, 5.0, 7.0].into_iter()), 5.0);
+        assert_eq!(median(vec![3.0f64, 5.0, 7.0, 9.0].into_iter()), Some(6.0));
+        assert_eq!(median(vec![3.0f64, 5.0, 7.0].into_iter()), Some(5.0));
     }
 
     #[test]
