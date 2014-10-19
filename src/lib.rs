@@ -1,5 +1,7 @@
 #![experimental]
-#![feature(slicing_syntax, tuple_indexing)]
+#![feature(default_type_params, slicing_syntax, tuple_indexing)]
+
+use std::hash;
 
 pub use frequency::Frequencies;
 pub use minmax::MinMax;
@@ -25,6 +27,10 @@ impl<T: PartialOrd> Ord for Partial<T> {
 impl<T: ToPrimitive> ToPrimitive for Partial<T> {
     fn to_i64(&self) -> Option<i64> { self.0.to_i64() }
     fn to_u64(&self) -> Option<u64> { self.0.to_u64() }
+}
+
+impl<T: hash::Hash<H>, H: hash::Writer> hash::Hash<H> for Partial<T> {
+    fn hash(&self, hasher: &mut H) { self.0.hash(hasher); }
 }
 
 /// Defines an interface for types that have an identity and can be commuted.

@@ -1,4 +1,6 @@
+use std::collections::HashSet;
 use std::default::Default;
+use std::hash::Hash;
 
 use {Commute, Partial};
 use super::sorted::{mode_on_sorted, median_on_sorted};
@@ -53,6 +55,16 @@ impl<T: PartialOrd> Unsorted<T> {
 
     fn dirtied(&mut self) {
         self.sorted = false;
+    }
+}
+
+impl<T: PartialOrd + Eq + Hash> Unsorted<T> {
+    pub fn cardinality(&self) -> uint {
+        let mut set = HashSet::with_capacity(self.len());
+        for x in self.data.iter() {
+            set.insert(x);
+        }
+        set.len()
     }
 }
 
