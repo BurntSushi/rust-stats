@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::default::Default;
 
 use {Commute, Partial};
@@ -29,7 +28,7 @@ pub fn mode<T: PartialOrd + Clone, I: Iterator<T>>(mut it: I) -> Option<T> {
 /// is returned.
 #[deriving(Clone)]
 pub struct Unsorted<T> {
-    data: RefCell<Vec<Partial<T>>>,
+    data: Vec<Partial<T>>,
     sorted: bool,
 }
 
@@ -42,12 +41,12 @@ impl<T: PartialOrd> Unsorted<T> {
     /// Add a new element to the set.
     pub fn add(&mut self, v: T) {
         self.dirtied();
-        self.data.borrow_mut().push(Partial(v))
+        self.data.push(Partial(v))
     }
 
-    fn sort(&self) {
+    fn sort(&mut self) {
         if !self.sorted {
-            self.data.borrow_mut().sort();
+            self.data.sort();
         }
     }
 
@@ -60,7 +59,7 @@ impl<T: PartialOrd + Clone> Unsorted<T> {
     /// Returns the mode of the data.
     pub fn mode(&mut self) -> Option<T> {
         self.sort();
-        mode_on_sorted(self.data.borrow().iter()).map(|p| p.0.clone())
+        mode_on_sorted(self.data.iter()).map(|p| p.0.clone())
     }
 }
 
@@ -68,32 +67,32 @@ impl<T: PartialOrd + ToPrimitive> Unsorted<T> {
     /// Returns the median of the data.
     pub fn median(&mut self) -> f64 {
         self.sort();
-        median_on_sorted((*self.data.borrow())[])
+        median_on_sorted(self.data[])
     }
 }
 
 impl<T: PartialOrd> Commute for Unsorted<T> {
     fn merge(&mut self, v: Unsorted<T>) {
         self.dirtied();
-        self.data.borrow_mut().extend(v.data.unwrap().into_iter());
+        self.data.extend(v.data.into_iter());
     }
 }
 
 impl<T: PartialOrd> Default for Unsorted<T> {
     fn default() -> Unsorted<T> {
         Unsorted {
-            data: RefCell::new(Vec::with_capacity(1000)),
+            data: Vec::with_capacity(1000),
             sorted: true,
         }
     }
 }
 
 impl<T: PartialOrd> Collection for Unsorted<T> {
-    fn len(&self) -> uint { self.data.borrow().len() }
+    fn len(&self) -> uint { self.data.len() }
 }
 
 impl<T: PartialOrd> Mutable for Unsorted<T> {
-    fn clear(&mut self) { self.sorted = true; self.data.borrow_mut().clear(); }
+    fn clear(&mut self) { self.sorted = true; self.data.clear(); }
 }
 
 impl<T: PartialOrd> FromIterator<T> for Unsorted<T> {
@@ -107,7 +106,7 @@ impl<T: PartialOrd> FromIterator<T> for Unsorted<T> {
 impl<T: PartialOrd> Extendable<T> for Unsorted<T> {
     fn extend<I: Iterator<T>>(&mut self, it: I) {
         self.dirtied();
-        self.data.borrow_mut().extend(it.map(Partial))
+        self.data.extend(it.map(Partial))
     }
 }
 
