@@ -71,6 +71,11 @@ impl<T: PartialOrd> Sorted<T> {
     pub fn add(&mut self, v: T) {
         self.data.push(Partial(v))
     }
+
+    /// Returns the number of data points.
+    pub fn len(&self) -> uint {
+        self.data.len()
+    }
 }
 
 impl<T: PartialOrd + Clone> Sorted<T> {
@@ -102,14 +107,6 @@ impl<T: PartialOrd> Commute for Sorted<T> {
 
 impl<T: PartialOrd> Default for Sorted<T> {
     fn default() -> Sorted<T> { Sorted { data: PriorityQueue::new() } }
-}
-
-impl<T: PartialOrd> Collection for Sorted<T> {
-    fn len(&self) -> uint { self.data.len() }
-}
-
-impl<T: PartialOrd> Mutable for Sorted<T> {
-    fn clear(&mut self) { self.data.clear(); }
 }
 
 impl<T: PartialOrd> FromIterator<T> for Sorted<T> {

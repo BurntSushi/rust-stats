@@ -43,6 +43,11 @@ impl<T: PartialOrd + Clone> MinMax<T> {
     pub fn max(&self) -> Option<&T> {
         self.max.as_ref()
     }
+
+    /// Returns the number of data point.
+    pub fn len(&self) -> uint {
+        self.len as uint
+    }
 }
 
 impl<T: PartialOrd> Commute for MinMax<T> {
@@ -72,20 +77,6 @@ impl<T: fmt::Show> fmt::Show for MinMax<T> {
             (&None, &None) => write!(f, "N/A"),
             _ => unreachable!(),
         }
-    }
-}
-
-impl<T> Collection for MinMax<T> {
-    fn len(&self) -> uint {
-        self.len as uint
-    }
-}
-
-impl<T> Mutable for MinMax<T> {
-    fn clear(&mut self) {
-        self.len = 0;
-        self.min = None;
-        self.max = None;
     }
 }
 

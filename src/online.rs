@@ -75,6 +75,11 @@ impl OnlineStats {
     pub fn add_null(&mut self) {
         self.size += 1;
     }
+
+    /// Returns the number of data points.
+    pub fn len(&self) -> uint {
+        self.size as uint
+    }
 }
 
 impl Commute for OnlineStats {
@@ -108,20 +113,6 @@ impl fmt::Show for OnlineStats {
         write!(f, "{} +/- {}",
                f64::to_str_digits(self.mean(), 10),
                f64::to_str_digits(self.stddev(), 10))
-    }
-}
-
-impl Collection for OnlineStats {
-    fn len(&self) -> uint {
-        self.size as uint
-    }
-}
-
-impl Mutable for OnlineStats {
-    fn clear(&mut self) {
-        self.size = 0;
-        self.mean = 0.0;
-        self.variance = 0.0;
     }
 }
 

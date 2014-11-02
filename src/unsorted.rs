@@ -47,6 +47,11 @@ impl<T: PartialOrd> Unsorted<T> {
         self.data.push(Partial(v))
     }
 
+    /// Return the number of data points.
+    pub fn len(&self) -> uint {
+        self.data.len()
+    }
+
     fn sort(&mut self) {
         if !self.sorted {
             self.data.sort();
@@ -98,14 +103,6 @@ impl<T: PartialOrd> Default for Unsorted<T> {
             sorted: true,
         }
     }
-}
-
-impl<T: PartialOrd> Collection for Unsorted<T> {
-    fn len(&self) -> uint { self.data.len() }
-}
-
-impl<T: PartialOrd> Mutable for Unsorted<T> {
-    fn clear(&mut self) { self.sorted = true; self.data.clear(); }
 }
 
 impl<T: PartialOrd> FromIterator<T> for Unsorted<T> {

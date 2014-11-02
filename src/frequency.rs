@@ -65,6 +65,11 @@ impl<T: Eq + Hash> Frequencies<T> {
         counts.sort_by(|&(_, c1), &(_, c2)| c1.cmp(&c2));
         counts
     }
+
+    /// Returns the cardinality of the data.
+    pub fn len(&self) -> uint {
+        self.data.len()
+    }
 }
 
 impl<T: Eq + Hash> Commute for Frequencies<T> {
@@ -77,14 +82,6 @@ impl<T: Eq + Hash> Default for Frequencies<T> {
     fn default() -> Frequencies<T> {
         Frequencies { data: HashMap::with_capacity(100000) }
     }
-}
-
-impl<T: Eq + Hash> Collection for Frequencies<T> {
-    fn len(&self) -> uint { self.data.len() }
-}
-
-impl<T: Eq + Hash> Mutable for Frequencies<T> {
-    fn clear(&mut self) { self.data.clear(); }
 }
 
 impl<T: Eq + Hash> FromIterator<T> for Frequencies<T> {
