@@ -1,4 +1,4 @@
-use std::collections::PriorityQueue;
+use std::collections::BinaryHeap;
 use std::default::Default;
 
 use {Commute, Partial};
@@ -58,7 +58,7 @@ pub fn mode_on_sorted<T: PartialOrd, I: Iterator<T>>(mut it: I) -> Option<T> {
 /// is returned.
 #[deriving(Clone)]
 pub struct Sorted<T> {
-    data: PriorityQueue<Partial<T>>,
+    data: BinaryHeap<Partial<T>>,
 }
 
 impl<T: PartialOrd> Sorted<T> {
@@ -106,7 +106,7 @@ impl<T: PartialOrd> Commute for Sorted<T> {
 }
 
 impl<T: PartialOrd> Default for Sorted<T> {
-    fn default() -> Sorted<T> { Sorted { data: PriorityQueue::new() } }
+    fn default() -> Sorted<T> { Sorted { data: BinaryHeap::new() } }
 }
 
 impl<T: PartialOrd> FromIterator<T> for Sorted<T> {
