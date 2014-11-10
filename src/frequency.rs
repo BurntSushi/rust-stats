@@ -10,6 +10,12 @@ pub struct Frequencies<T> {
     data: HashMap<T, u64>,
 }
 
+impl<T: PartialEq + Eq + Hash + fmt::Show> fmt::Show for Frequencies<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.data)
+    }
+}
+
 impl<T: Eq + Hash> Frequencies<T> {
     /// Create a new frequency table with no samples.
     pub fn new() -> Frequencies<T> {
