@@ -33,7 +33,7 @@ impl<T: Eq + Hash> Frequencies<T> {
 
     /// Return the number of occurrences of `v` in the data.
     pub fn count(&self, v: &T) -> u64 {
-        self.data.find(v).map(|&v| v).unwrap_or(0)
+        self.data.get(v).map(|&v| v).unwrap_or(0)
     }
 
     /// Return the cardinality (number of unique elements) in the data.
