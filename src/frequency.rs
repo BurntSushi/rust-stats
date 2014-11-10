@@ -1,4 +1,5 @@
 use std::collections::hash_map::{HashMap, Occupied, Vacant};
+use std::fmt;
 use std::hash::Hash;
 use std::default::Default;
 
@@ -80,7 +81,12 @@ impl<T: Eq + Hash> Frequencies<T> {
 
 impl<T: Eq + Hash> Commute for Frequencies<T> {
     fn merge(&mut self, v: Frequencies<T>) {
-        self.data.extend(v.data.into_iter());
+        for (k, v2) in v.data.into_iter() {
+            match self.data.entry(k) {
+                Vacant(v1) => { v1.set(v2); }
+                Occupied(mut v1) => { *v1.get_mut() += v2; }
+            }
+        }
     }
 }
 
