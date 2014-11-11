@@ -117,7 +117,7 @@ impl<T: PartialOrd> FromIterator<T> for Sorted<T> {
     }
 }
 
-impl<T: PartialOrd> Extendable<T> for Sorted<T> {
+impl<T: PartialOrd> Extend<T> for Sorted<T> {
     fn extend<I: Iterator<T>>(&mut self, it: I) {
         self.data.extend(it.map(Partial))
     }

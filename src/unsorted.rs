@@ -113,7 +113,7 @@ impl<T: PartialOrd> FromIterator<T> for Unsorted<T> {
     }
 }
 
-impl<T: PartialOrd> Extendable<T> for Unsorted<T> {
+impl<T: PartialOrd> Extend<T> for Unsorted<T> {
     fn extend<I: Iterator<T>>(&mut self, it: I) {
         self.dirtied();
         self.data.extend(it.map(Partial))
