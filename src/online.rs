@@ -1,6 +1,7 @@
 use std::default::Default;
 use std::f64;
 use std::fmt;
+use std::num::Float;
 
 use Commute;
 
