@@ -143,6 +143,7 @@ mod test {
     fn median_floats() {
         assert_eq!(median(vec![3.0f64, 5.0, 7.0, 9.0].into_iter()), Some(6.0));
         assert_eq!(median(vec![3.0f64, 5.0, 7.0].into_iter()), Some(5.0));
+        assert_eq!(median(vec![1.0f64, 2.5, 3.0].into_iter()), Some(2.5));
     }
 
     #[test]

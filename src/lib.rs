@@ -25,8 +25,20 @@ impl<T: PartialOrd> Ord for Partial<T> {
 }
 
 impl<T: ToPrimitive> ToPrimitive for Partial<T> {
+    fn to_int(&self) -> Option<int> { self.0.to_int() }
+    fn to_i8(&self) -> Option<i8> { self.0.to_i8() }
+    fn to_i16(&self) -> Option<i16> { self.0.to_i16() }
+    fn to_i32(&self) -> Option<i32> { self.0.to_i32() }
     fn to_i64(&self) -> Option<i64> { self.0.to_i64() }
+
+    fn to_uint(&self) -> Option<uint> { self.0.to_uint() }
+    fn to_u8(&self) -> Option<u8> { self.0.to_u8() }
+    fn to_u16(&self) -> Option<u16> { self.0.to_u16() }
+    fn to_u32(&self) -> Option<u32> { self.0.to_u32() }
     fn to_u64(&self) -> Option<u64> { self.0.to_u64() }
+
+    fn to_f32(&self) -> Option<f32> { self.0.to_f32() }
+    fn to_f64(&self) -> Option<f64> { self.0.to_f64() }
 }
 
 impl<T: hash::Hash<H>, H: hash::Writer> hash::Hash<H> for Partial<T> {
