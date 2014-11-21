@@ -1,7 +1,14 @@
 [package]
-name = "rust-stats"
+name = "streaming-stats"
 version = "0.1.1"
 authors = ["Andrew Gallant <jamslam@gmail.com>"]
+description = "Experimental crate for computing basic statistics on streams."
+documentation = "http://burntsushi.net/rustdoc/stats/"
+homepage = "https://github.com/BurntSushi/rust-stats"
+repository = "https://github.com/BurntSushi/rust-stats"
+readme = "README.md"
+keywords = ["statistics", "stats", "median", "mean", "stddev"]
+license = "Unlicense"
 
 [lib]
 name = "stats"
