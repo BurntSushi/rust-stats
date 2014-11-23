@@ -1,6 +1,6 @@
 [package]
 name = "streaming-stats"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Andrew Gallant <jamslam@gmail.com>"]
 description = "Experimental crate for computing basic statistics on streams."
 documentation = "http://burntsushi.net/rustdoc/stats/"
