@@ -127,12 +127,13 @@ impl<T: PartialOrd> Extend<T> for Sorted<T> {
 mod test {
     use super::Sorted;
 
-    fn median<T: PartialOrd + ToPrimitive + Clone, I: Iterator<T>>
-                 (mut it: I) -> Option<f64> {
+    fn median<T, I>(it: I) -> Option<f64>
+       where T: PartialOrd + ToPrimitive + Clone, I: Iterator<T> {
         it.collect::<Sorted<T>>().median()
     }
 
-    fn mode<T: PartialOrd + Clone, I: Iterator<T>>(mut it: I) -> Option<T> {
+    fn mode<T, I>(it: I) -> Option<T>
+       where T: PartialOrd + Clone, I: Iterator<T> {
         it.collect::<Sorted<T>>().mode()
     }
 

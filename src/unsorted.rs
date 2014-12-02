@@ -6,8 +6,8 @@ use super::sorted::{mode_on_sorted, median_on_sorted};
 /// Compute the exact median on a stream of data.
 ///
 /// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
-pub fn median<T: PartialOrd + ToPrimitive, I: Iterator<T>>
-             (mut it: I) -> Option<f64> {
+pub fn median<T, I>(it: I) -> Option<f64>
+       where T: PartialOrd + ToPrimitive, I: Iterator<T> {
     it.collect::<Unsorted<T>>().median()
 }
 
@@ -16,12 +16,13 @@ pub fn median<T: PartialOrd + ToPrimitive, I: Iterator<T>>
 /// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
 ///
 /// If the data does not have a mode, then `None` is returned.
-pub fn mode<T: PartialOrd + Clone, I: Iterator<T>>(mut it: I) -> Option<T> {
+pub fn mode<T, I>(it: I) -> Option<T>
+       where T: PartialOrd + Clone, I: Iterator<T> {
     it.collect::<Unsorted<T>>().mode()
 }
 
 /// A commutative data structure for lazily sorted sequences of data.
-/// 
+///
 /// The sort does not occur until statistics need to be computed.
 ///
 /// Note that this works on types that do not define a total ordering like

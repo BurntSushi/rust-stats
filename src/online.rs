@@ -6,17 +6,17 @@ use std::num::Float;
 use Commute;
 
 /// Compute the standard deviation of a stream in constant space.
-pub fn stddev<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
+pub fn stddev<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<T> {
     it.collect::<OnlineStats>().stddev()
 }
 
 /// Compute the variance of a stream in constant space.
-pub fn variance<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
+pub fn variance<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<T> {
     it.collect::<OnlineStats>().variance()
 }
 
 /// Compute the mean of a stream in constant space.
-pub fn mean<T: ToPrimitive, I: Iterator<T>>(mut it: I) -> f64 {
+pub fn mean<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<T> {
     it.collect::<OnlineStats>().mean()
 }
 
