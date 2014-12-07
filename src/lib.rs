@@ -1,5 +1,5 @@
 #![experimental]
-#![feature(default_type_params, slicing_syntax, tuple_indexing)]
+#![feature(default_type_params, slicing_syntax)]
 
 use std::hash;
 
