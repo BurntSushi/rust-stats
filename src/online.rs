@@ -21,7 +21,7 @@ pub fn mean<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<T> {
 }
 
 /// Online state for computing mean, variance and standard deviation.
-#[deriving(Clone)]
+#[deriving(Copy)]
 pub struct OnlineStats {
     size: u64,
     mean: f64,
@@ -145,7 +145,7 @@ mod test {
 
         let var1 = OnlineStats::from_slice(&[1u, 2, 3]);
         let var2 = OnlineStats::from_slice(&[2u, 4, 6]);
-        let mut got = var1.clone();
+        let mut got = var1;
         got.merge(var2);
         assert_eq!(expected.stddev(), got.stddev());
     }
