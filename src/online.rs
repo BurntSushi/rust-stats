@@ -21,7 +21,7 @@ pub fn mean<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<T> {
 }
 
 /// Online state for computing mean, variance and standard deviation.
-#[deriving(Copy)]
+#[deriving(Clone, Copy)]
 pub struct OnlineStats {
     size: u64,
     mean: f64,
