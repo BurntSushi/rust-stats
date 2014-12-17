@@ -46,10 +46,10 @@ impl<T: Eq + Hash> Frequencies<T> {
         let counts = self.most_frequent();
         if counts.is_empty() {
             None
-        } else if counts.len() >= 2 && counts[0].val1() == counts[1].val1() {
+        } else if counts.len() >= 2 && counts[0].1 == counts[1].1 {
             None
         } else {
-            Some(counts[0].val0())
+            Some(counts[0].0)
         }
     }
 
