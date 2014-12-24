@@ -1,4 +1,4 @@
-use std::collections::hash_map::{HashMap, Occupied, Vacant};
+use std::collections::hash_map::{HashMap, Entry};
 use std::fmt;
 use std::hash::Hash;
 use std::default::Default;
@@ -26,8 +26,8 @@ impl<T: Eq + Hash> Frequencies<T> {
     /// Add a sample to the frequency table.
     pub fn add(&mut self, v: T) {
         match self.data.entry(v) {
-            Vacant(count) => { count.set(1); },
-            Occupied(mut count) => { *count.get_mut() += 1; },
+            Entry::Vacant(count) => { count.set(1); },
+            Entry::Occupied(mut count) => { *count.get_mut() += 1; },
         }
     }
 
@@ -83,8 +83,8 @@ impl<T: Eq + Hash> Commute for Frequencies<T> {
     fn merge(&mut self, v: Frequencies<T>) {
         for (k, v2) in v.data.into_iter() {
             match self.data.entry(k) {
-                Vacant(v1) => { v1.set(v2); }
-                Occupied(mut v1) => { *v1.get_mut() += v2; }
+                Entry::Vacant(v1) => { v1.set(v2); }
+                Entry::Occupied(mut v1) => { *v1.get_mut() += v2; }
             }
         }
     }
