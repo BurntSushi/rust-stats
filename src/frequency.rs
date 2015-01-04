@@ -1,12 +1,13 @@
 use std::collections::hash_map::{HashMap, Entry};
 use std::fmt;
 use std::hash::Hash;
+use std::iter::FromIterator;
 use std::default::Default;
 
 use Commute;
 
 /// A commutative data structure for exact frequency counts.
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct Frequencies<T> {
     data: HashMap<T, u64>,
 }
@@ -97,7 +98,7 @@ impl<T: Eq + Hash> Default for Frequencies<T> {
 }
 
 impl<T: Eq + Hash> FromIterator<T> for Frequencies<T> {
-    fn from_iter<I: Iterator<T>>(it: I) -> Frequencies<T> {
+    fn from_iter<I: Iterator<Item=T>>(it: I) -> Frequencies<T> {
         let mut v = Frequencies::new();
         v.extend(it);
         v
@@ -105,7 +106,7 @@ impl<T: Eq + Hash> FromIterator<T> for Frequencies<T> {
 }
 
 impl<T: Eq + Hash> Extend<T> for Frequencies<T> {
-    fn extend<I: Iterator<T>>(&mut self, mut it: I) {
+    fn extend<I: Iterator<Item=T>>(&mut self, mut it: I) {
         for sample in it {
             self.add(sample);
         }

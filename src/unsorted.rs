@@ -1,4 +1,6 @@
 use std::default::Default;
+use std::iter::FromIterator;
+use std::num::ToPrimitive;
 
 use {Commute, Partial};
 use super::sorted::{mode_on_sorted, median_on_sorted};
@@ -7,7 +9,7 @@ use super::sorted::{mode_on_sorted, median_on_sorted};
 ///
 /// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
 pub fn median<T, I>(it: I) -> Option<f64>
-       where T: PartialOrd + ToPrimitive, I: Iterator<T> {
+       where T: PartialOrd + ToPrimitive, I: Iterator<Item=T> {
     it.collect::<Unsorted<T>>().median()
 }
 
@@ -17,7 +19,7 @@ pub fn median<T, I>(it: I) -> Option<f64>
 ///
 /// If the data does not have a mode, then `None` is returned.
 pub fn mode<T, I>(it: I) -> Option<T>
-       where T: PartialOrd + Clone, I: Iterator<T> {
+       where T: PartialOrd + Clone, I: Iterator<Item=T> {
     it.collect::<Unsorted<T>>().mode()
 }
 
@@ -28,7 +30,7 @@ pub fn mode<T, I>(it: I) -> Option<T>
 /// Note that this works on types that do not define a total ordering like
 /// `f32` and `f64`. When an ordering is not defined, an arbitrary order
 /// is returned.
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct Unsorted<T> {
     data: Vec<Partial<T>>,
     sorted: bool,
@@ -104,7 +106,7 @@ impl<T: PartialOrd> Default for Unsorted<T> {
 }
 
 impl<T: PartialOrd> FromIterator<T> for Unsorted<T> {
-    fn from_iter<I: Iterator<T>>(it: I) -> Unsorted<T> {
+    fn from_iter<I: Iterator<Item=T>>(it: I) -> Unsorted<T> {
         let mut v = Unsorted::new();
         v.extend(it);
         v
@@ -112,7 +114,7 @@ impl<T: PartialOrd> FromIterator<T> for Unsorted<T> {
 }
 
 impl<T: PartialOrd> Extend<T> for Unsorted<T> {
-    fn extend<I: Iterator<T>>(&mut self, it: I) {
+    fn extend<I: Iterator<Item=T>>(&mut self, it: I) {
         self.dirtied();
         self.data.extend(it.map(Partial))
     }

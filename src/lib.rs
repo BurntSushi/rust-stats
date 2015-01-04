@@ -1,7 +1,10 @@
 #![experimental]
 #![feature(default_type_params, slicing_syntax)]
+#![feature(old_orphan_check)] // see rustc commit c61a00
 
+use std::cmp::Ordering;
 use std::hash;
+use std::num::ToPrimitive;
 
 pub use frequency::Frequencies;
 pub use minmax::MinMax;
@@ -13,14 +16,14 @@ pub use unsorted::{Unsorted, median, mode};
 ///
 /// This allows types like `f64` to be used in data structures that require
 /// `Ord`. When an ordering is not defined, an arbitrary order is returned.
-#[deriving(Clone, PartialEq, PartialOrd)]
+#[derive(Clone, PartialEq, PartialOrd)]
 struct Partial<T>(pub T);
 
 impl<T: PartialEq> Eq for Partial<T> {}
 
 impl<T: PartialOrd> Ord for Partial<T> {
     fn cmp(&self, other: &Partial<T>) -> Ordering {
-        self.partial_cmp(other).unwrap_or(Less)
+        self.partial_cmp(other).unwrap_or(Ordering::Less)
     }
 }
 
@@ -49,12 +52,12 @@ impl<T: hash::Hash<H>, H: hash::Writer> hash::Hash<H> for Partial<T> {
 ///
 /// The value returned by `Default::default` must be its identity with respect
 /// to the `merge` operation.
-pub trait Commute {
+pub trait Commute : Sized {
     /// Merges the value `other` into `self`.
     fn merge(&mut self, other: Self);
 
     /// Merges the values in the iterator into `self`.
-    fn consume<I: Iterator<Self>>(&mut self, mut other: I) {
+    fn consume<I: Iterator<Item=Self>>(&mut self, mut other: I) {
         for v in other {
             self.merge(v);
         }
@@ -64,7 +67,7 @@ pub trait Commute {
 /// Merges all items in the stream.
 ///
 /// If the stream is empty, `None` is returned.
-pub fn merge_all<T: Commute, I: Iterator<T>>(mut it: I) -> Option<T> {
+pub fn merge_all<T: Commute, I: Iterator<Item=T>>(mut it: I) -> Option<T> {
     match it.next() {
         None => None,
         Some(mut init) => { init.consume(it); Some(init) }

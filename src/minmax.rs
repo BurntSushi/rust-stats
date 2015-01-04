@@ -1,12 +1,13 @@
 use std::default::Default;
 use std::fmt;
+use std::iter::FromIterator;
 
 use Commute;
 
 /// A commutative data structure for tracking minimum and maximum values.
 ///
 /// This also stores the number of samples.
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct MinMax<T> {
     len: u64,
     min: Option<T>,
@@ -81,7 +82,7 @@ impl<T: fmt::Show> fmt::Show for MinMax<T> {
 }
 
 impl<T: PartialOrd + Clone> FromIterator<T> for MinMax<T> {
-    fn from_iter<I: Iterator<T>>(it: I) -> MinMax<T> {
+    fn from_iter<I: Iterator<Item=T>>(it: I) -> MinMax<T> {
         let mut v = MinMax::new();
         v.extend(it);
         v
@@ -89,7 +90,7 @@ impl<T: PartialOrd + Clone> FromIterator<T> for MinMax<T> {
 }
 
 impl<T: PartialOrd + Clone> Extend<T> for MinMax<T> {
-    fn extend<I: Iterator<T>>(&mut self, mut it: I) {
+    fn extend<I: Iterator<Item=T>>(&mut self, mut it: I) {
         for sample in it {
             self.add(sample);
         }

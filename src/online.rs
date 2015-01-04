@@ -1,27 +1,28 @@
 use std::default::Default;
 use std::f64;
 use std::fmt;
-use std::num::Float;
+use std::iter::FromIterator;
+use std::num::{Float, ToPrimitive};
 
 use Commute;
 
 /// Compute the standard deviation of a stream in constant space.
-pub fn stddev<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<T> {
+pub fn stddev<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<Item=T> {
     it.collect::<OnlineStats>().stddev()
 }
 
 /// Compute the variance of a stream in constant space.
-pub fn variance<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<T> {
+pub fn variance<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<Item=T> {
     it.collect::<OnlineStats>().variance()
 }
 
 /// Compute the mean of a stream in constant space.
-pub fn mean<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<T> {
+pub fn mean<T, I>(it: I) -> f64 where T: ToPrimitive, I: Iterator<Item=T> {
     it.collect::<OnlineStats>().mean()
 }
 
 /// Online state for computing mean, variance and standard deviation.
-#[deriving(Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct OnlineStats {
     size: u64,
     mean: f64,
@@ -118,7 +119,7 @@ impl fmt::Show for OnlineStats {
 }
 
 impl<T: ToPrimitive> FromIterator<T> for OnlineStats {
-    fn from_iter<I: Iterator<T>>(it: I) -> OnlineStats {
+    fn from_iter<I: Iterator<Item=T>>(it: I) -> OnlineStats {
         let mut v = OnlineStats::new();
         v.extend(it);
         v
@@ -126,7 +127,7 @@ impl<T: ToPrimitive> FromIterator<T> for OnlineStats {
 }
 
 impl<T: ToPrimitive> Extend<T> for OnlineStats {
-    fn extend<I: Iterator<T>>(&mut self, mut it: I) {
+    fn extend<I: Iterator<Item=T>>(&mut self, mut it: I) {
         for sample in it {
             self.add(sample)
         }

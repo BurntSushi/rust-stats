@@ -1,5 +1,7 @@
 use std::collections::BinaryHeap;
 use std::default::Default;
+use std::iter::FromIterator;
+use std::num::ToPrimitive;
 
 use {Commute, Partial};
 
@@ -19,7 +21,8 @@ pub fn median_on_sorted<T: PartialOrd + ToPrimitive>
     })
 }
 
-pub fn mode_on_sorted<T: PartialOrd, I: Iterator<T>>(mut it: I) -> Option<T> {
+pub fn mode_on_sorted<T, I>(mut it: I) -> Option<T>
+        where T: PartialOrd, I: Iterator<Item=T> {
     // This approach to computing the mode works very nicely when the
     // number of samples is large and is close to its cardinality.
     // In other cases, a hashmap would be much better.
@@ -56,7 +59,7 @@ pub fn mode_on_sorted<T: PartialOrd, I: Iterator<T>>(mut it: I) -> Option<T> {
 /// Note that this works on types that do not define a total ordering like
 /// `f32` and `f64`. Then an ordering is not defined, an arbitrary order
 /// is returned.
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct Sorted<T> {
     data: BinaryHeap<Partial<T>>,
 }
@@ -110,7 +113,7 @@ impl<T: PartialOrd> Default for Sorted<T> {
 }
 
 impl<T: PartialOrd> FromIterator<T> for Sorted<T> {
-    fn from_iter<I: Iterator<T>>(it: I) -> Sorted<T> {
+    fn from_iter<I: Iterator<Item=T>>(it: I) -> Sorted<T> {
         let mut v = Sorted::new();
         v.extend(it);
         v
@@ -118,22 +121,23 @@ impl<T: PartialOrd> FromIterator<T> for Sorted<T> {
 }
 
 impl<T: PartialOrd> Extend<T> for Sorted<T> {
-    fn extend<I: Iterator<T>>(&mut self, it: I) {
+    fn extend<I: Iterator<Item=T>>(&mut self, it: I) {
         self.data.extend(it.map(Partial))
     }
 }
 
 #[cfg(test)]
 mod test {
+    use std::num::ToPrimitive;
     use super::Sorted;
 
     fn median<T, I>(it: I) -> Option<f64>
-       where T: PartialOrd + ToPrimitive + Clone, I: Iterator<T> {
+       where T: PartialOrd + ToPrimitive + Clone, I: Iterator<Item=T> {
         it.collect::<Sorted<T>>().median()
     }
 
     fn mode<T, I>(it: I) -> Option<T>
-       where T: PartialOrd + Clone, I: Iterator<T> {
+       where T: PartialOrd + Clone, I: Iterator<Item=T> {
         it.collect::<Sorted<T>>().mode()
     }
 
