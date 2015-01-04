@@ -8,9 +8,9 @@ use super::sorted::{mode_on_sorted, median_on_sorted};
 /// Compute the exact median on a stream of data.
 ///
 /// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
-pub fn median<T, I>(it: I) -> Option<f64>
-       where T: PartialOrd + ToPrimitive, I: Iterator<Item=T> {
-    it.collect::<Unsorted<T>>().median()
+pub fn median<I>(it: I) -> Option<f64>
+        where I: Iterator, <I as Iterator>::Item: PartialOrd + ToPrimitive {
+    it.collect::<Unsorted<_>>().median()
 }
 
 /// Compute the exact mode on a stream of data.

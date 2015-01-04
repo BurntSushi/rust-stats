@@ -5,8 +5,8 @@ use std::num::ToPrimitive;
 
 use {Commute, Partial};
 
-pub fn median_on_sorted<T: PartialOrd + ToPrimitive>
-                       (data: &[T]) -> Option<f64> {
+pub fn median_on_sorted<T>(data: &[T]) -> Option<f64>
+        where T: PartialOrd + ToPrimitive {
     Some(match data.len() {
         0 => return None,
         1 => data[0].to_f64().unwrap(),
