@@ -75,7 +75,7 @@ impl OnlineStats {
     ///
     /// This increases the population size by `1`.
     pub fn add_null(&mut self) {
-        self.size += 1;
+        self.add(0u);
     }
 
     /// Returns the number of data points.
