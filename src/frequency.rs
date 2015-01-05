@@ -18,7 +18,7 @@ impl<T: PartialEq + Eq + Hash + fmt::Show> fmt::Show for Frequencies<T> {
     }
 }
 
-impl<T: Eq + Hash> Frequencies<T> {
+impl<T: Eq + Hash + Clone> Frequencies<T> {
     /// Create a new frequency table with no samples.
     pub fn new() -> Frequencies<T> {
         Default::default()
@@ -26,8 +26,8 @@ impl<T: Eq + Hash> Frequencies<T> {
 
     /// Add a sample to the frequency table.
     pub fn add(&mut self, v: T) {
-        match self.data.entry(v) {
-            Entry::Vacant(count) => { count.set(1); },
+        match self.data.entry(&v) {
+            Entry::Vacant(count) => { count.insert(1); },
             Entry::Occupied(mut count) => { *count.get_mut() += 1; },
         }
     }
@@ -80,11 +80,11 @@ impl<T: Eq + Hash> Frequencies<T> {
     }
 }
 
-impl<T: Eq + Hash> Commute for Frequencies<T> {
+impl<T: Eq + Hash + Clone> Commute for Frequencies<T> {
     fn merge(&mut self, v: Frequencies<T>) {
         for (k, v2) in v.data.into_iter() {
-            match self.data.entry(k) {
-                Entry::Vacant(v1) => { v1.set(v2); }
+            match self.data.entry(&k) {
+                Entry::Vacant(v1) => { v1.insert(v2); }
                 Entry::Occupied(mut v1) => { *v1.get_mut() += v2; }
             }
         }
@@ -97,7 +97,7 @@ impl<T: Eq + Hash> Default for Frequencies<T> {
     }
 }
 
-impl<T: Eq + Hash> FromIterator<T> for Frequencies<T> {
+impl<T: Eq + Hash + Clone> FromIterator<T> for Frequencies<T> {
     fn from_iter<I: Iterator<Item=T>>(it: I) -> Frequencies<T> {
         let mut v = Frequencies::new();
         v.extend(it);
@@ -105,7 +105,7 @@ impl<T: Eq + Hash> FromIterator<T> for Frequencies<T> {
     }
 }
 
-impl<T: Eq + Hash> Extend<T> for Frequencies<T> {
+impl<T: Eq + Hash + Clone> Extend<T> for Frequencies<T> {
     fn extend<I: Iterator<Item=T>>(&mut self, mut it: I) {
         for sample in it {
             self.add(sample);
