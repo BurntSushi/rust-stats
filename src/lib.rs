@@ -1,5 +1,5 @@
 #![experimental]
-#![feature(default_type_params, slicing_syntax)]
+#![feature(slicing_syntax)]
 #![feature(old_orphan_check)] // see rustc commit c61a00
 
 use std::cmp::Ordering;
