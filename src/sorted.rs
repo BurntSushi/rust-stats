@@ -30,7 +30,7 @@ pub fn mode_on_sorted<T, I>(mut it: I) -> Option<T>
     // Might just switch to a hashmap to track frequencies. That would also
     // be generally useful for discovering the cardinality of a sample.
     let (mut mode, mut next) = (None, None);
-    let (mut mode_count, mut next_count) = (0u, 0u);
+    let (mut mode_count, mut next_count) = (0us, 0us);
     for x in it {
         if mode.as_ref().map(|y| y == &x).unwrap_or(false) {
             mode_count += 1;
@@ -48,7 +48,7 @@ pub fn mode_on_sorted<T, I>(mut it: I) -> Option<T>
             next_count = 0;
         } else if next_count == mode_count {
             mode = None;
-            mode_count = 0u;
+            mode_count = 0us;
         }
     }
     mode
@@ -76,7 +76,7 @@ impl<T: PartialOrd> Sorted<T> {
     }
 
     /// Returns the number of data points.
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.data.len()
     }
 }
@@ -97,7 +97,7 @@ impl<T: PartialOrd + ToPrimitive + Clone> Sorted<T> {
         //
         // NOTE: Can `std::mem::swap` help us here?
         let data = self.data.clone().into_sorted_vec();
-        median_on_sorted(data[])
+        median_on_sorted(&*data)
     }
 }
 
@@ -143,17 +143,17 @@ mod test {
 
     #[test]
     fn median_stream() {
-        assert_eq!(median(vec![3u, 5, 7, 9].into_iter()), Some(6.0));
-        assert_eq!(median(vec![3u, 5, 7].into_iter()), Some(5.0));
+        assert_eq!(median(vec![3us, 5, 7, 9].into_iter()), Some(6.0));
+        assert_eq!(median(vec![3us, 5, 7].into_iter()), Some(5.0));
     }
 
     #[test]
     fn mode_stream() {
-        assert_eq!(mode(vec![3u, 5, 7, 9].into_iter()), None);
-        assert_eq!(mode(vec![3u, 3, 3, 3].into_iter()), Some(3));
-        assert_eq!(mode(vec![3u, 3, 3, 4].into_iter()), Some(3));
-        assert_eq!(mode(vec![4u, 3, 3, 3].into_iter()), Some(3));
-        assert_eq!(mode(vec![1u, 1, 2, 3, 3].into_iter()), None);
+        assert_eq!(mode(vec![3us, 5, 7, 9].into_iter()), None);
+        assert_eq!(mode(vec![3us, 3, 3, 3].into_iter()), Some(3));
+        assert_eq!(mode(vec![3us, 3, 3, 4].into_iter()), Some(3));
+        assert_eq!(mode(vec![4us, 3, 3, 3].into_iter()), Some(3));
+        assert_eq!(mode(vec![1us, 1, 2, 3, 3].into_iter()), None);
     }
 
     #[test]

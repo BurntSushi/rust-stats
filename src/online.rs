@@ -78,12 +78,12 @@ impl OnlineStats {
     ///
     /// This increases the population size by `1`.
     pub fn add_null(&mut self) {
-        self.add(0u);
+        self.add(0us);
     }
 
     /// Returns the number of data points.
-    pub fn len(&self) -> uint {
-        self.size as uint
+    pub fn len(&self) -> usize {
+        self.size as usize
     }
 }
 
@@ -145,10 +145,10 @@ mod test {
     #[test]
     fn stddev() {
         // TODO: Convert this to a quickcheck test.
-        let expected = OnlineStats::from_slice(&[1u, 2, 3, 2, 4, 6]);
+        let expected = OnlineStats::from_slice(&[1us, 2, 3, 2, 4, 6]);
 
-        let var1 = OnlineStats::from_slice(&[1u, 2, 3]);
-        let var2 = OnlineStats::from_slice(&[2u, 4, 6]);
+        let var1 = OnlineStats::from_slice(&[1us, 2, 3]);
+        let var2 = OnlineStats::from_slice(&[2us, 4, 6]);
         let mut got = var1;
         got.merge(var2);
         assert_eq!(expected.stddev(), got.stddev());
@@ -157,12 +157,12 @@ mod test {
     #[test]
     fn stddev_many() {
         // TODO: Convert this to a quickcheck test.
-        let expected = OnlineStats::from_slice(&[1u, 2, 3, 2, 4, 6, 3, 6, 9]);
+        let expected = OnlineStats::from_slice(&[1us, 2, 3, 2, 4, 6, 3, 6, 9]);
 
         let vars = vec![
-            OnlineStats::from_slice(&[1u, 2, 3]),
-            OnlineStats::from_slice(&[2u, 4, 6]),
-            OnlineStats::from_slice(&[3u, 6, 9]),
+            OnlineStats::from_slice(&[1us, 2, 3]),
+            OnlineStats::from_slice(&[2us, 4, 6]),
+            OnlineStats::from_slice(&[3us, 6, 9]),
         ];
         assert_eq!(expected.stddev(),
                    merge_all(vars.into_iter()).unwrap().stddev());

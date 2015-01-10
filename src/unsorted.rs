@@ -49,7 +49,7 @@ impl<T: PartialOrd> Unsorted<T> {
     }
 
     /// Return the number of data points.
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.data.len()
     }
 
@@ -65,7 +65,7 @@ impl<T: PartialOrd> Unsorted<T> {
 }
 
 impl<T: PartialOrd + Eq + Clone> Unsorted<T> {
-    pub fn cardinality(&mut self) -> uint {
+    pub fn cardinality(&mut self) -> usize {
         self.sort();
         let mut set = self.data.clone();
         set.dedup();
@@ -85,7 +85,7 @@ impl<T: PartialOrd + ToPrimitive> Unsorted<T> {
     /// Returns the median of the data.
     pub fn median(&mut self) -> Option<f64> {
         self.sort();
-        median_on_sorted(self.data[])
+        median_on_sorted(&*self.data)
     }
 }
 
@@ -126,17 +126,17 @@ mod test {
 
     #[test]
     fn median_stream() {
-        assert_eq!(median(vec![3u, 5, 7, 9].into_iter()), Some(6.0));
-        assert_eq!(median(vec![3u, 5, 7].into_iter()), Some(5.0));
+        assert_eq!(median(vec![3us, 5, 7, 9].into_iter()), Some(6.0));
+        assert_eq!(median(vec![3us, 5, 7].into_iter()), Some(5.0));
     }
 
     #[test]
     fn mode_stream() {
-        assert_eq!(mode(vec![3u, 5, 7, 9].into_iter()), None);
-        assert_eq!(mode(vec![3u, 3, 3, 3].into_iter()), Some(3));
-        assert_eq!(mode(vec![3u, 3, 3, 4].into_iter()), Some(3));
-        assert_eq!(mode(vec![4u, 3, 3, 3].into_iter()), Some(3));
-        assert_eq!(mode(vec![1u, 1, 2, 3, 3].into_iter()), None);
+        assert_eq!(mode(vec![3us, 5, 7, 9].into_iter()), None);
+        assert_eq!(mode(vec![3us, 3, 3, 3].into_iter()), Some(3));
+        assert_eq!(mode(vec![3us, 3, 3, 4].into_iter()), Some(3));
+        assert_eq!(mode(vec![4us, 3, 3, 3].into_iter()), Some(3));
+        assert_eq!(mode(vec![1us, 1, 2, 3, 3].into_iter()), None);
     }
 
     #[test]

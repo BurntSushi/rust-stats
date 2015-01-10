@@ -1,4 +1,4 @@
-use std::collections::hash_map::{HashMap, Entry};
+use std::collections::hash_map::{HashMap, Entry, Hasher};
 use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
@@ -12,13 +12,13 @@ pub struct Frequencies<T> {
     data: HashMap<T, u64>,
 }
 
-impl<T: PartialEq + Eq + Hash + fmt::Show> fmt::Show for Frequencies<T> {
+impl<T: fmt::Show + Eq + Hash<Hasher>> fmt::Show for Frequencies<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.data)
+        write!(f, "{:?}", self.data)
     }
 }
 
-impl<T: Eq + Hash + Clone> Frequencies<T> {
+impl<T: Eq + Hash<Hasher>> Frequencies<T> {
     /// Create a new frequency table with no samples.
     pub fn new() -> Frequencies<T> {
         Default::default()
@@ -26,7 +26,7 @@ impl<T: Eq + Hash + Clone> Frequencies<T> {
 
     /// Add a sample to the frequency table.
     pub fn add(&mut self, v: T) {
-        match self.data.entry(&v) {
+        match self.data.entry(v) {
             Entry::Vacant(count) => { count.insert(1); },
             Entry::Occupied(mut count) => { *count.get_mut() += 1; },
         }
@@ -75,15 +75,15 @@ impl<T: Eq + Hash + Clone> Frequencies<T> {
     }
 
     /// Returns the cardinality of the data.
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.data.len()
     }
 }
 
-impl<T: Eq + Hash + Clone> Commute for Frequencies<T> {
+impl<T: Eq + Hash<Hasher>> Commute for Frequencies<T> {
     fn merge(&mut self, v: Frequencies<T>) {
         for (k, v2) in v.data.into_iter() {
-            match self.data.entry(&k) {
+            match self.data.entry(k) {
                 Entry::Vacant(v1) => { v1.insert(v2); }
                 Entry::Occupied(mut v1) => { *v1.get_mut() += v2; }
             }
@@ -91,13 +91,13 @@ impl<T: Eq + Hash + Clone> Commute for Frequencies<T> {
     }
 }
 
-impl<T: Eq + Hash> Default for Frequencies<T> {
+impl<T: Eq + Hash<Hasher>> Default for Frequencies<T> {
     fn default() -> Frequencies<T> {
         Frequencies { data: HashMap::with_capacity(100000) }
     }
 }
 
-impl<T: Eq + Hash + Clone> FromIterator<T> for Frequencies<T> {
+impl<T: Eq + Hash<Hasher>> FromIterator<T> for Frequencies<T> {
     fn from_iter<I: Iterator<Item=T>>(it: I) -> Frequencies<T> {
         let mut v = Frequencies::new();
         v.extend(it);
@@ -105,7 +105,7 @@ impl<T: Eq + Hash + Clone> FromIterator<T> for Frequencies<T> {
     }
 }
 
-impl<T: Eq + Hash + Clone> Extend<T> for Frequencies<T> {
+impl<T: Eq + Hash<Hasher>> Extend<T> for Frequencies<T> {
     fn extend<I: Iterator<Item=T>>(&mut self, mut it: I) {
         for sample in it {
             self.add(sample);
@@ -120,7 +120,7 @@ mod test {
     #[test]
     fn ranked() {
         let mut counts = Frequencies::new();
-        counts.extend(vec![1u, 1, 2, 2, 2, 2, 2, 3, 4, 4, 4].into_iter());
+        counts.extend(vec![1us, 1, 2, 2, 2, 2, 2, 3, 4, 4, 4].into_iter());
         assert_eq!(counts.most_frequent()[0], (&2, 5));
         assert_eq!(counts.least_frequent()[0], (&3, 1));
     }

@@ -1,5 +1,6 @@
 #![experimental]
 #![feature(slicing_syntax)]
+#![allow(unstable)]
 
 use std::cmp::Ordering;
 use std::hash;
@@ -27,13 +28,13 @@ impl<T: PartialOrd> Ord for Partial<T> {
 }
 
 impl<T: ToPrimitive> ToPrimitive for Partial<T> {
-    fn to_int(&self) -> Option<int> { self.0.to_int() }
+    fn to_int(&self) -> Option<isize> { self.0.to_int() }
     fn to_i8(&self) -> Option<i8> { self.0.to_i8() }
     fn to_i16(&self) -> Option<i16> { self.0.to_i16() }
     fn to_i32(&self) -> Option<i32> { self.0.to_i32() }
     fn to_i64(&self) -> Option<i64> { self.0.to_i64() }
 
-    fn to_uint(&self) -> Option<uint> { self.0.to_uint() }
+    fn to_uint(&self) -> Option<usize> { self.0.to_uint() }
     fn to_u8(&self) -> Option<u8> { self.0.to_u8() }
     fn to_u16(&self) -> Option<u16> { self.0.to_u16() }
     fn to_u32(&self) -> Option<u32> { self.0.to_u32() }
@@ -43,7 +44,7 @@ impl<T: ToPrimitive> ToPrimitive for Partial<T> {
     fn to_f64(&self) -> Option<f64> { self.0.to_f64() }
 }
 
-impl<T: hash::Hash<H>, H: hash::Writer> hash::Hash<H> for Partial<T> {
+impl<T: hash::Hash<H>, H: hash::Hasher> hash::Hash<H> for Partial<T> {
     fn hash(&self, hasher: &mut H) { self.0.hash(hasher); }
 }
 
@@ -75,9 +76,9 @@ pub fn merge_all<T: Commute, I: Iterator<Item=T>>(mut it: I) -> Option<T> {
 
 impl<T: Commute> Commute for Option<T> {
     fn merge(&mut self, other: Option<T>) {
-        match self {
-            &None => { *self = other; }
-            &Some(ref mut v1) => { other.map(|v2| v1.merge(v2)); }
+        match *self {
+            None => { *self = other; }
+            Some(ref mut v1) => { other.map(|v2| v1.merge(v2)); }
         }
     }
 }
@@ -90,9 +91,9 @@ impl<T: Commute, E> Commute for Result<T, E> {
             *self = other;
             return;
         }
-        match self {
-            &Err(_) => {},
-            &Ok(ref mut v1) => {
+        match *self {
+            Err(_) => {},
+            Ok(ref mut v1) => {
                 match other {
                     Ok(v2) => { v1.merge(v2); }
                     // This is the awkward part. We can't assign to `*self`
@@ -127,8 +128,8 @@ mod test {
 
     #[test]
     fn options() {
-        let v1: Sorted<uint> = vec![2, 1, 3, 2].into_iter().collect();
-        let v2: Sorted<uint> = vec![5, 6, 5, 5].into_iter().collect();
+        let v1: Sorted<usize> = vec![2, 1, 3, 2].into_iter().collect();
+        let v2: Sorted<usize> = vec![5, 6, 5, 5].into_iter().collect();
         let mut merged = Some(v1);
         merged.merge(Some(v2));
         assert_eq!(merged.unwrap().mode(), Some(5));

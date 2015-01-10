@@ -46,8 +46,8 @@ impl<T: PartialOrd + Clone> MinMax<T> {
     }
 
     /// Returns the number of data point.
-    pub fn len(&self) -> uint {
-        self.len as uint
+    pub fn len(&self) -> usize {
+        self.len as usize
     }
 }
 
@@ -73,7 +73,7 @@ impl<T: fmt::Show> fmt::Show for MinMax<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match (&self.min, &self.max) {
             (&Some(ref min), &Some(ref max)) => {
-                write!(f, "[{}, {}]", min, max)
+                write!(f, "[{:?}, {:?}]", min, max)
             }
             (&None, &None) => write!(f, "N/A"),
             _ => unreachable!(),
@@ -103,8 +103,9 @@ mod test {
 
     #[test]
     fn minmax() {
-        let minmax: MinMax<uint> = vec![1u, 4, 2, 3, 10].into_iter().collect();
-        assert_eq!(minmax.min(), Some(&1u));
-        assert_eq!(minmax.max(), Some(&10u));
+        let minmax: MinMax<usize> =
+            vec![1us, 4, 2, 3, 10].into_iter().collect();
+        assert_eq!(minmax.min(), Some(&1us));
+        assert_eq!(minmax.max(), Some(&10us));
     }
 }
