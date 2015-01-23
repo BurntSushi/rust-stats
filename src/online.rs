@@ -113,7 +113,7 @@ impl Default for OnlineStats {
     }
 }
 
-impl fmt::Show for OnlineStats {
+impl fmt::Debug for OnlineStats {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} +/- {}",
                f64::to_str_digits(self.mean(), 10),

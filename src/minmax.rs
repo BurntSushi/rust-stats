@@ -69,7 +69,7 @@ impl<T: PartialOrd> Default for MinMax<T> {
     }
 }
 
-impl<T: fmt::Show> fmt::Show for MinMax<T> {
+impl<T: fmt::Debug> fmt::Debug for MinMax<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match (&self.min, &self.max) {
             (&Some(ref min), &Some(ref max)) => {

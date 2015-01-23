@@ -12,7 +12,7 @@ pub struct Frequencies<T> {
     data: HashMap<T, u64>,
 }
 
-impl<T: fmt::Show + Eq + Hash<Hasher>> fmt::Show for Frequencies<T> {
+impl<T: fmt::Debug + Eq + Hash<Hasher>> fmt::Debug for Frequencies<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self.data)
     }
