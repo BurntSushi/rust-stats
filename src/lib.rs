@@ -1,6 +1,4 @@
-#![experimental]
-#![feature(slicing_syntax)]
-#![allow(unstable)]
+#![feature(collections, core, hash, std_misc)]
 
 use std::cmp::Ordering;
 use std::hash;
