@@ -55,7 +55,7 @@ pub trait Commute : Sized {
     fn merge(&mut self, other: Self);
 
     /// Merges the values in the iterator into `self`.
-    fn consume<I: Iterator<Item=Self>>(&mut self, mut other: I) {
+    fn consume<I: Iterator<Item=Self>>(&mut self, other: I) {
         for v in other {
             self.merge(v);
         }

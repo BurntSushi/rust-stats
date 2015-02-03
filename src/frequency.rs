@@ -106,7 +106,7 @@ impl<T: Eq + Hash<Hasher>> FromIterator<T> for Frequencies<T> {
 }
 
 impl<T: Eq + Hash<Hasher>> Extend<T> for Frequencies<T> {
-    fn extend<I: Iterator<Item=T>>(&mut self, mut it: I) {
+    fn extend<I: Iterator<Item=T>>(&mut self, it: I) {
         for sample in it {
             self.add(sample);
         }

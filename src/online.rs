@@ -130,7 +130,7 @@ impl<T: ToPrimitive> FromIterator<T> for OnlineStats {
 }
 
 impl<T: ToPrimitive> Extend<T> for OnlineStats {
-    fn extend<I: Iterator<Item=T>>(&mut self, mut it: I) {
+    fn extend<I: Iterator<Item=T>>(&mut self, it: I) {
         for sample in it {
             self.add(sample)
         }

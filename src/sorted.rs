@@ -21,7 +21,7 @@ pub fn median_on_sorted<T>(data: &[T]) -> Option<f64>
     })
 }
 
-pub fn mode_on_sorted<T, I>(mut it: I) -> Option<T>
+pub fn mode_on_sorted<T, I>(it: I) -> Option<T>
         where T: PartialOrd, I: Iterator<Item=T> {
     // This approach to computing the mode works very nicely when the
     // number of samples is large and is close to its cardinality.

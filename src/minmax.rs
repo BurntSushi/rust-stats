@@ -90,7 +90,7 @@ impl<T: PartialOrd + Clone> FromIterator<T> for MinMax<T> {
 }
 
 impl<T: PartialOrd + Clone> Extend<T> for MinMax<T> {
-    fn extend<I: Iterator<Item=T>>(&mut self, mut it: I) {
+    fn extend<I: Iterator<Item=T>>(&mut self, it: I) {
         for sample in it {
             self.add(sample);
         }
