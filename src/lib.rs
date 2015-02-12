@@ -1,4 +1,4 @@
-#![feature(collections, core, hash)]
+#![feature(collections, core, hash, std_misc)]
 
 use std::cmp::Ordering;
 use std::hash;
