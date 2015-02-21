@@ -1,5 +1,5 @@
 use std::default::Default;
-use std::iter::FromIterator;
+use std::iter::{FromIterator, IntoIterator};
 use std::num::ToPrimitive;
 
 use {Commute, Partial};
@@ -106,7 +106,7 @@ impl<T: PartialOrd> Default for Unsorted<T> {
 }
 
 impl<T: PartialOrd> FromIterator<T> for Unsorted<T> {
-    fn from_iter<I: Iterator<Item=T>>(it: I) -> Unsorted<T> {
+    fn from_iter<I: IntoIterator<Item=T>>(it: I) -> Unsorted<T> {
         let mut v = Unsorted::new();
         v.extend(it);
         v
@@ -114,9 +114,9 @@ impl<T: PartialOrd> FromIterator<T> for Unsorted<T> {
 }
 
 impl<T: PartialOrd> Extend<T> for Unsorted<T> {
-    fn extend<I: Iterator<Item=T>>(&mut self, it: I) {
+    fn extend<I: IntoIterator<Item=T>>(&mut self, it: I) {
         self.dirtied();
-        self.data.extend(it.map(Partial))
+        self.data.extend(it.into_iter().map(Partial))
     }
 }
 
@@ -126,17 +126,17 @@ mod test {
 
     #[test]
     fn median_stream() {
-        assert_eq!(median(vec![3us, 5, 7, 9].into_iter()), Some(6.0));
-        assert_eq!(median(vec![3us, 5, 7].into_iter()), Some(5.0));
+        assert_eq!(median(vec![3usize, 5, 7, 9].into_iter()), Some(6.0));
+        assert_eq!(median(vec![3usize, 5, 7].into_iter()), Some(5.0));
     }
 
     #[test]
     fn mode_stream() {
-        assert_eq!(mode(vec![3us, 5, 7, 9].into_iter()), None);
-        assert_eq!(mode(vec![3us, 3, 3, 3].into_iter()), Some(3));
-        assert_eq!(mode(vec![3us, 3, 3, 4].into_iter()), Some(3));
-        assert_eq!(mode(vec![4us, 3, 3, 3].into_iter()), Some(3));
-        assert_eq!(mode(vec![1us, 1, 2, 3, 3].into_iter()), None);
+        assert_eq!(mode(vec![3usize, 5, 7, 9].into_iter()), None);
+        assert_eq!(mode(vec![3usize, 3, 3, 3].into_iter()), Some(3));
+        assert_eq!(mode(vec![3usize, 3, 3, 4].into_iter()), Some(3));
+        assert_eq!(mode(vec![4usize, 3, 3, 3].into_iter()), Some(3));
+        assert_eq!(mode(vec![1usize, 1, 2, 3, 3].into_iter()), None);
     }
 
     #[test]

@@ -1,4 +1,4 @@
-#![feature(collections, core, hash, std_misc)]
+#![feature(collections, core, std_misc)]
 
 use std::cmp::Ordering;
 use std::hash;
@@ -42,8 +42,8 @@ impl<T: ToPrimitive> ToPrimitive for Partial<T> {
     fn to_f64(&self) -> Option<f64> { self.0.to_f64() }
 }
 
-impl<T: hash::Hash<H>, H: hash::Hasher> hash::Hash<H> for Partial<T> {
-    fn hash(&self, hasher: &mut H) { self.0.hash(hasher); }
+impl<T: hash::Hash> hash::Hash for Partial<T> {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) { self.0.hash(state); }
 }
 
 /// Defines an interface for types that have an identity and can be commuted.

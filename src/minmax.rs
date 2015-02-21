@@ -1,6 +1,6 @@
 use std::default::Default;
 use std::fmt;
-use std::iter::FromIterator;
+use std::iter::{FromIterator, IntoIterator};
 
 use Commute;
 
@@ -82,7 +82,7 @@ impl<T: fmt::Debug> fmt::Debug for MinMax<T> {
 }
 
 impl<T: PartialOrd + Clone> FromIterator<T> for MinMax<T> {
-    fn from_iter<I: Iterator<Item=T>>(it: I) -> MinMax<T> {
+    fn from_iter<I: IntoIterator<Item=T>>(it: I) -> MinMax<T> {
         let mut v = MinMax::new();
         v.extend(it);
         v
@@ -90,7 +90,7 @@ impl<T: PartialOrd + Clone> FromIterator<T> for MinMax<T> {
 }
 
 impl<T: PartialOrd + Clone> Extend<T> for MinMax<T> {
-    fn extend<I: Iterator<Item=T>>(&mut self, it: I) {
+    fn extend<I: IntoIterator<Item=T>>(&mut self, it: I) {
         for sample in it {
             self.add(sample);
         }
@@ -104,8 +104,8 @@ mod test {
     #[test]
     fn minmax() {
         let minmax: MinMax<usize> =
-            vec![1us, 4, 2, 3, 10].into_iter().collect();
-        assert_eq!(minmax.min(), Some(&1us));
-        assert_eq!(minmax.max(), Some(&10us));
+            vec![1usize, 4, 2, 3, 10].into_iter().collect();
+        assert_eq!(minmax.min(), Some(&1usize));
+        assert_eq!(minmax.max(), Some(&10usize));
     }
 }

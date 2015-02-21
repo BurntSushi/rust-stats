@@ -1,7 +1,7 @@
 use std::default::Default;
 use std::f64;
 use std::fmt;
-use std::iter::FromIterator;
+use std::iter::{FromIterator, IntoIterator};
 use std::num::{Float, ToPrimitive};
 
 use Commute;
@@ -78,7 +78,7 @@ impl OnlineStats {
     ///
     /// This increases the population size by `1`.
     pub fn add_null(&mut self) {
-        self.add(0us);
+        self.add(0usize);
     }
 
     /// Returns the number of data points.
@@ -122,7 +122,7 @@ impl fmt::Debug for OnlineStats {
 }
 
 impl<T: ToPrimitive> FromIterator<T> for OnlineStats {
-    fn from_iter<I: Iterator<Item=T>>(it: I) -> OnlineStats {
+    fn from_iter<I: IntoIterator<Item=T>>(it: I) -> OnlineStats {
         let mut v = OnlineStats::new();
         v.extend(it);
         v
@@ -130,7 +130,7 @@ impl<T: ToPrimitive> FromIterator<T> for OnlineStats {
 }
 
 impl<T: ToPrimitive> Extend<T> for OnlineStats {
-    fn extend<I: Iterator<Item=T>>(&mut self, it: I) {
+    fn extend<I: IntoIterator<Item=T>>(&mut self, it: I) {
         for sample in it {
             self.add(sample)
         }
@@ -145,10 +145,10 @@ mod test {
     #[test]
     fn stddev() {
         // TODO: Convert this to a quickcheck test.
-        let expected = OnlineStats::from_slice(&[1us, 2, 3, 2, 4, 6]);
+        let expected = OnlineStats::from_slice(&[1usize, 2, 3, 2, 4, 6]);
 
-        let var1 = OnlineStats::from_slice(&[1us, 2, 3]);
-        let var2 = OnlineStats::from_slice(&[2us, 4, 6]);
+        let var1 = OnlineStats::from_slice(&[1usize, 2, 3]);
+        let var2 = OnlineStats::from_slice(&[2usize, 4, 6]);
         let mut got = var1;
         got.merge(var2);
         assert_eq!(expected.stddev(), got.stddev());
@@ -157,12 +157,13 @@ mod test {
     #[test]
     fn stddev_many() {
         // TODO: Convert this to a quickcheck test.
-        let expected = OnlineStats::from_slice(&[1us, 2, 3, 2, 4, 6, 3, 6, 9]);
+        let expected = OnlineStats::from_slice(
+            &[1usize, 2, 3, 2, 4, 6, 3, 6, 9]);
 
         let vars = vec![
-            OnlineStats::from_slice(&[1us, 2, 3]),
-            OnlineStats::from_slice(&[2us, 4, 6]),
-            OnlineStats::from_slice(&[3us, 6, 9]),
+            OnlineStats::from_slice(&[1usize, 2, 3]),
+            OnlineStats::from_slice(&[2usize, 4, 6]),
+            OnlineStats::from_slice(&[3usize, 6, 9]),
         ];
         assert_eq!(expected.stddev(),
                    merge_all(vars.into_iter()).unwrap().stddev());
