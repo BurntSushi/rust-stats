@@ -26,13 +26,13 @@ impl<T: PartialOrd> Ord for Partial<T> {
 }
 
 impl<T: ToPrimitive> ToPrimitive for Partial<T> {
-    fn to_int(&self) -> Option<isize> { self.0.to_int() }
+    fn to_isize(&self) -> Option<isize> { self.0.to_isize() }
     fn to_i8(&self) -> Option<i8> { self.0.to_i8() }
     fn to_i16(&self) -> Option<i16> { self.0.to_i16() }
     fn to_i32(&self) -> Option<i32> { self.0.to_i32() }
     fn to_i64(&self) -> Option<i64> { self.0.to_i64() }
 
-    fn to_uint(&self) -> Option<usize> { self.0.to_uint() }
+    fn to_usize(&self) -> Option<usize> { self.0.to_usize() }
     fn to_u8(&self) -> Option<u8> { self.0.to_u8() }
     fn to_u16(&self) -> Option<u16> { self.0.to_u16() }
     fn to_u32(&self) -> Option<u32> { self.0.to_u32() }
