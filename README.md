@@ -4,7 +4,7 @@ is to permit parallel computation of statistics on large data sets.
 
 [![Build status](https://api.travis-ci.org/BurntSushi/rust-stats.png)](https://travis-ci.org/BurntSushi/rust-stats)
 
-Licensed under the [UNLICENSE](http://unlicense.org).
+Dual-licensed under MIT or the [UNLICENSE](http://unlicense.org).
 
 
 ### Documentation
@@ -16,7 +16,7 @@ Some documentation exists here:
 ### Installation
 
 This crate works with Cargo. Assuming you have Rust and
-[Cargo](http://crates.io/) installed, simply check out the source and run 
+[Cargo](http://crates.io/) installed, simply check out the source and run
 tests:
 
 ```bash
