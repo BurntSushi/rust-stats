@@ -12,3 +12,6 @@ license = "Unlicense/MIT"
 
 [lib]
 name = "stats"
+
+[dependencies]
+num = "*"

@@ -1,8 +1,8 @@
 use std::default::Default;
-use std::f64;
 use std::fmt;
 use std::iter::{FromIterator, IntoIterator};
-use std::num::{Float, ToPrimitive};
+
+use num::{Float, ToPrimitive};
 
 use Commute;
 
@@ -116,8 +116,8 @@ impl Default for OnlineStats {
 impl fmt::Debug for OnlineStats {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} +/- {}",
-               f64::to_str_digits(self.mean(), 10),
-               f64::to_str_digits(self.stddev(), 10))
+               float_to_string(self.mean()),
+               float_to_string(self.stddev()))
     }
 }
 
@@ -135,6 +135,11 @@ impl<T: ToPrimitive> Extend<T> for OnlineStats {
             self.add(sample)
         }
     }
+}
+
+fn float_to_string(v: f64) -> String {
+    let s: String = format!("{:.10}", v).trim_right_matches('0').into();
+    if s.ends_with('.') { s + "0" } else { s }
 }
 
 #[cfg(test)]

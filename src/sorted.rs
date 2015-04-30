@@ -1,7 +1,8 @@
 use std::collections::BinaryHeap;
 use std::default::Default;
 use std::iter::{FromIterator, IntoIterator};
-use std::num::ToPrimitive;
+
+use num::ToPrimitive;
 
 use {Commute, Partial};
 
@@ -128,7 +129,7 @@ impl<T: PartialOrd> Extend<T> for Sorted<T> {
 
 #[cfg(test)]
 mod test {
-    use std::num::ToPrimitive;
+    use num::ToPrimitive;
     use super::Sorted;
 
     fn median<T, I>(it: I) -> Option<f64>
