@@ -3,7 +3,6 @@ use std::iter::{FromIterator, IntoIterator};
 use num::ToPrimitive;
 
 use {Commute, Partial};
-use super::sorted::{mode_on_sorted, median_on_sorted};
 
 /// Compute the exact median on a stream of data.
 ///
@@ -21,6 +20,55 @@ pub fn median<I>(it: I) -> Option<f64>
 pub fn mode<T, I>(it: I) -> Option<T>
        where T: PartialOrd + Clone, I: Iterator<Item=T> {
     it.collect::<Unsorted<T>>().mode()
+}
+
+fn median_on_sorted<T>(data: &[T]) -> Option<f64>
+        where T: PartialOrd + ToPrimitive {
+    Some(match data.len() {
+        0 => return None,
+        1 => data[0].to_f64().unwrap(),
+        len if len % 2 == 0 => {
+            let v1 = data[(len / 2) - 1].to_f64().unwrap();
+            let v2 = data[len / 2].to_f64().unwrap();
+            (v1 + v2) / 2.0
+        }
+        len => {
+            data[len / 2].to_f64().unwrap()
+        }
+    })
+}
+
+fn mode_on_sorted<T, I>(it: I) -> Option<T>
+        where T: PartialOrd, I: Iterator<Item=T> {
+    // This approach to computing the mode works very nicely when the
+    // number of samples is large and is close to its cardinality.
+    // In other cases, a hashmap would be much better.
+    // But really, how can we know this when given an arbitrary stream?
+    // Might just switch to a hashmap to track frequencies. That would also
+    // be generally useful for discovering the cardinality of a sample.
+    let (mut mode, mut next) = (None, None);
+    let (mut mode_count, mut next_count) = (0usize, 0usize);
+    for x in it {
+        if mode.as_ref().map(|y| y == &x).unwrap_or(false) {
+            mode_count += 1;
+        } else if next.as_ref().map(|y| y == &x).unwrap_or(false) {
+            next_count += 1;
+        } else {
+            next = Some(x);
+            next_count = 0;
+        }
+
+        if next_count > mode_count {
+            mode = next;
+            mode_count = next_count;
+            next = None;
+            next_count = 0;
+        } else if next_count == mode_count {
+            mode = None;
+            mode_count = 0usize;
+        }
+    }
+    mode
 }
 
 /// A commutative data structure for lazily sorted sequences of data.

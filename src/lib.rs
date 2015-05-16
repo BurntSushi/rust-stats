@@ -1,5 +1,3 @@
-#![feature(collections)]
-
 extern crate num;
 
 use std::cmp::Ordering;
@@ -9,7 +7,6 @@ use num::ToPrimitive;
 pub use frequency::Frequencies;
 pub use minmax::MinMax;
 pub use online::{OnlineStats, stddev, variance, mean};
-pub use sorted::Sorted;
 pub use unsorted::{Unsorted, median, mode};
 
 /// Partial wraps a type that satisfies `PartialOrd` and implements `Ord`.
@@ -118,18 +115,17 @@ impl<T: Commute> Commute for Vec<T> {
 mod frequency;
 mod minmax;
 mod online;
-mod sorted;
 mod unsorted;
 
 #[cfg(test)]
 mod test {
     use Commute;
-    use sorted::Sorted;
+    use unsorted::Unsorted;
 
     #[test]
     fn options() {
-        let v1: Sorted<usize> = vec![2, 1, 3, 2].into_iter().collect();
-        let v2: Sorted<usize> = vec![5, 6, 5, 5].into_iter().collect();
+        let v1: Unsorted<usize> = vec![2, 1, 3, 2].into_iter().collect();
+        let v2: Unsorted<usize> = vec![5, 6, 5, 5].into_iter().collect();
         let mut merged = Some(v1);
         merged.merge(Some(v2));
         assert_eq!(merged.unwrap().mode(), Some(5));
