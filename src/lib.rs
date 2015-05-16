@@ -1,8 +1,10 @@
-#![feature(collections, core, std_misc)]
+#![feature(collections)]
+
+extern crate num;
 
 use std::cmp::Ordering;
 use std::hash;
-use std::num::ToPrimitive;
+use num::ToPrimitive;
 
 pub use frequency::Frequencies;
 pub use minmax::MinMax;

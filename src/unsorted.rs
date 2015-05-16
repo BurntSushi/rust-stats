@@ -1,6 +1,6 @@
 use std::default::Default;
 use std::iter::{FromIterator, IntoIterator};
-use std::num::ToPrimitive;
+use num::ToPrimitive;
 
 use {Commute, Partial};
 use super::sorted::{mode_on_sorted, median_on_sorted};
