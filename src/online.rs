@@ -82,8 +82,8 @@ impl OnlineStats {
     }
 
     /// Returns the number of data points.
-    pub fn len(&self) -> usize {
-        self.size as usize
+    pub fn len(&self) -> u64 {
+        self.size
     }
 }
 
