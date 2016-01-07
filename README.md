@@ -29,7 +29,7 @@ cargo test
 You can also add `rust-stats` as a dependency to your project's `Cargo.toml`:
 
 ```toml
-[dependencies.rust-stats]
+[dependencies.streaming-stats]
 git = "git://github.com/BurntSushi/rust-stats"
 ```
 
