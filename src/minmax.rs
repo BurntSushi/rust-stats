@@ -54,8 +54,12 @@ impl<T: PartialOrd + Clone> MinMax<T> {
 impl<T: PartialOrd> Commute for MinMax<T> {
     fn merge(&mut self, v: MinMax<T>) {
         self.len += v.len;
-        if v.min < self.min { self.min = v.min; }
-        if v.max > self.max { self.max = v.max; }
+        if self.min.is_none() || (!v.min.is_none() && v.min < self.min) {
+            self.min = v.min;
+        }
+        if self.max.is_none() || (!v.max.is_none() && v.max > self.max) {
+            self.max = v.max;
+        }
     }
 }
 
@@ -100,12 +104,24 @@ impl<T: PartialOrd + Clone> Extend<T> for MinMax<T> {
 #[cfg(test)]
 mod test {
     use super::MinMax;
+    use Commute;
 
     #[test]
     fn minmax() {
-        let minmax: MinMax<usize> =
-            vec![1usize, 4, 2, 3, 10].into_iter().collect();
-        assert_eq!(minmax.min(), Some(&1usize));
-        assert_eq!(minmax.max(), Some(&10usize));
+        let minmax: MinMax<u32> =
+            vec![1u32, 4, 2, 3, 10].into_iter().collect();
+        assert_eq!(minmax.min(), Some(&1u32));
+        assert_eq!(minmax.max(), Some(&10u32));
+    }
+
+    #[test]
+    fn minmax_merge_empty() {
+        let mut mx1: MinMax<u32> = vec![1, 4, 2, 3, 10].into_iter().collect();
+        assert_eq!(mx1.min(), Some(&1u32));
+        assert_eq!(mx1.max(), Some(&10u32));
+
+        mx1.merge(MinMax::default());
+        assert_eq!(mx1.min(), Some(&1u32));
+        assert_eq!(mx1.max(), Some(&10u32));
     }
 }
