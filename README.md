@@ -16,20 +16,9 @@ Some documentation exists here:
 
 ### Installation
 
-This crate works with Cargo. Assuming you have Rust and
-[Cargo](http://crates.io/) installed, simply check out the source and run
-tests:
-
-```bash
-git checkout git://github.com/BurntSushi/rust-stats
-cd rust-stats
-cargo test
-```
-
-You can also add `rust-stats` as a dependency to your project's `Cargo.toml`:
+Simply add `streaming-stats` as a dependency to your project's `Cargo.toml`:
 
 ```toml
-[dependencies.streaming-stats]
-git = "git://github.com/BurntSushi/rust-stats"
+[dependencies]
+streaming-stats = "0.1"
 ```
-
