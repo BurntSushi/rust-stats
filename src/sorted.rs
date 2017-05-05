@@ -2,7 +2,7 @@ use std::collections::BinaryHeap;
 use std::default::Default;
 use std::iter::{FromIterator, IntoIterator};
 
-use num::ToPrimitive;
+use num_traits::ToPrimitive;
 
 use {Commute, Partial};
 

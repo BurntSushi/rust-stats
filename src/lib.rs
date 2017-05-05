@@ -1,8 +1,8 @@
-extern crate num;
+extern crate num_traits;
 
 use std::cmp::Ordering;
 use std::hash;
-use num::ToPrimitive;
+use num_traits::ToPrimitive;
 
 pub use frequency::Frequencies;
 pub use minmax::MinMax;
