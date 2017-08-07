@@ -11,7 +11,7 @@ Dual-licensed under MIT or the [UNLICENSE](http://unlicense.org).
 ### Documentation
 
 Some documentation exists here:
-[http://burntsushi.net/rustdoc/stats/](http://burntsushi.net/rustdoc/stats/).
+[https://docs.rs/streaming-stats](https://docs.rs/streaming-stats).
 
 
 ### Installation
