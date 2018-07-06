@@ -20,5 +20,5 @@ Simply add `streaming-stats` as a dependency to your project's `Cargo.toml`:
 
 ```toml
 [dependencies]
-streaming-stats = "0.1"
+streaming-stats = "0.2"
 ```
