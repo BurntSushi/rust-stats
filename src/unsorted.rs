@@ -22,6 +22,28 @@ pub fn mode<T, I>(it: I) -> Option<T>
     it.collect::<Unsorted<T>>().mode()
 }
 
+/// Compute the modes on a stream of data.
+/// 
+/// If there is a single mode, then only that value is returned in the `Vec`
+/// however, if there multiple values tied for occuring the most amount of times
+/// those values are returned.
+/// 
+/// ## Example
+/// ```
+/// use stats;
+/// 
+/// let vals = vec![1, 1, 2, 2, 3];
+/// 
+/// assert_eq!(stats::modes(vals.into_iter()), vec![1, 2]);
+/// ```
+/// This has time complexity `O(n)`
+///
+/// If the data does not have a mode, then an empty `Vec` is returned.
+pub fn modes<T, I>(it: I) -> Vec<T>
+       where T: PartialOrd + Clone, I: Iterator<Item=T> {
+    it.collect::<Unsorted<T>>().modes()
+}
+
 fn median_on_sorted<T>(data: &[T]) -> Option<f64>
         where T: PartialOrd + ToPrimitive {
     Some(match data.len() {
@@ -69,6 +91,37 @@ fn mode_on_sorted<T, I>(it: I) -> Option<T>
         }
     }
     mode
+}
+
+fn modes_on_sorted<T, I>(it: I) -> Vec<T>
+        where T: PartialOrd, I: Iterator<Item=T> {
+
+    let mut highest_mode = 1_u32;
+    let mut modes: Vec<u32> = vec![];
+    let mut values = vec![];
+    let mut count = 0;
+    for x in it {
+        if values.len() == 0 {
+            values.push(x);
+            modes.push(1);
+            continue
+        }
+        if x == values[count] {
+            modes[count] += 1;
+            if highest_mode < modes[count] {
+                highest_mode = modes[count];
+            }
+        } else {
+            values.push(x);
+            modes.push(1);
+            count += 1;
+        }
+    }
+    modes.into_iter()
+        .zip(values)
+        .filter(|(cnt, _val)| *cnt == highest_mode && highest_mode > 1)
+        .map(|(_, val)| val)
+        .collect()
 }
 
 /// A commutative data structure for lazily sorted sequences of data.
@@ -127,6 +180,15 @@ impl<T: PartialOrd + Clone> Unsorted<T> {
         self.sort();
         mode_on_sorted(self.data.iter()).map(|p| p.0.clone())
     }
+
+    /// Returns the modes of the data.
+    pub fn modes(&mut self) -> Vec<T> {
+        self.sort();
+        modes_on_sorted(self.data.iter())
+            .into_iter()
+            .map(|p| p.0.clone())
+            .collect()
+    }
 }
 
 impl<T: PartialOrd + ToPrimitive> Unsorted<T> {
@@ -170,7 +232,7 @@ impl<T: PartialOrd> Extend<T> for Unsorted<T> {
 
 #[cfg(test)]
 mod test {
-    use super::{median, mode};
+    use super::{median, mode, modes};
 
     #[test]
     fn median_stream() {
@@ -201,5 +263,24 @@ mod test {
         assert_eq!(mode(vec![3.0f64, 3.0, 3.0, 4.0].into_iter()), Some(3.0));
         assert_eq!(mode(vec![4.0f64, 3.0, 3.0, 3.0].into_iter()), Some(3.0));
         assert_eq!(mode(vec![1.0f64, 1.0, 2.0, 3.0, 3.0].into_iter()), None);
+    }
+
+    #[test]
+    fn modes_stream() {
+        assert_eq!(modes(vec![3usize, 5, 7, 9].into_iter()), vec![]);
+        assert_eq!(modes(vec![3usize, 3, 3, 3].into_iter()), vec![3]);
+        assert_eq!(modes(vec![3usize, 3, 4, 4].into_iter()), vec![3, 4]);
+        assert_eq!(modes(vec![4usize, 3, 3, 3].into_iter()), vec![3]);
+        assert_eq!(modes(vec![1usize, 1, 2, 2].into_iter()), vec![1, 2]);
+        let vec: Vec<u32> = vec![];
+        assert_eq!(modes(vec.into_iter()), vec![]);
+    }
+
+    #[test]
+    fn modes_floats() {
+        assert_eq!(modes(vec![3_f64, 5.0, 7.0, 9.0].into_iter()), vec![]);
+        assert_eq!(modes(vec![3_f64, 3.0, 3.0, 3.0].into_iter()), vec![3.0]);
+        assert_eq!(modes(vec![3_f64, 3.0, 4.0, 4.0].into_iter()), vec![3.0, 4.0]);
+        assert_eq!(modes(vec![1_f64, 1.0, 2.0, 3.0, 3.0].into_iter()), vec![1.0, 3.0]);
     }
 }
