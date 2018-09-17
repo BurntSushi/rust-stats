@@ -23,10 +23,22 @@ pub fn mode<T, I>(it: I) -> Option<T>
 }
 
 /// Compute the modes on a stream of data.
+/// 
+/// If there is a single mode, then only that value is returned in the `Vec`
+/// however, if there multiple values tied for occuring the most amount of times
+/// those values are returned.
+/// 
+/// ## Example
+/// ```
+/// use stats;
+/// 
+/// let vals = vec![1, 1, 2, 2, 3];
+/// 
+/// assert_eq!(stats::modes(vals.into_iter()), vec![1, 2]);
+/// ```
+/// This has time complexity `O(n)`
 ///
-/// (This has time complexity `O(n)`)
-///
-/// If the data does not have a mode, then `None` is returned.
+/// If the data does not have a mode, then an empty `Vec` is returned.
 pub fn modes<T, I>(it: I) -> Vec<T>
        where T: PartialOrd + Clone, I: Iterator<Item=T> {
     it.collect::<Unsorted<T>>().modes()
@@ -85,8 +97,8 @@ fn modes_on_sorted<T, I>(it: I) -> Vec<T>
         where T: PartialOrd, I: Iterator<Item=T> {
 
     let mut highest_mode = 1_u32;
-    let mut modes: Vec<u32> = Vec::new();
-    let mut values = Vec::new();
+    let mut modes: Vec<u32> = vec![];
+    let mut values = vec![];
     let mut count = 0;
     for x in it {
         if values.len() == 0 {
@@ -105,14 +117,11 @@ fn modes_on_sorted<T, I>(it: I) -> Vec<T>
             count += 1;
         }
     }
-
-
-
     modes.into_iter()
-            .zip(values)
-            .filter(|(cnt, _val)| *cnt == highest_mode && highest_mode > 1)
-            .map(|(_, val)| val)
-            .collect()
+        .zip(values)
+        .filter(|(cnt, _val)| *cnt == highest_mode && highest_mode > 1)
+        .map(|(_, val)| val)
+        .collect()
 }
 
 /// A commutative data structure for lazily sorted sequences of data.
@@ -262,6 +271,9 @@ mod test {
         assert_eq!(modes(vec![3usize, 3, 3, 3].into_iter()), vec![3]);
         assert_eq!(modes(vec![3usize, 3, 4, 4].into_iter()), vec![3, 4]);
         assert_eq!(modes(vec![4usize, 3, 3, 3].into_iter()), vec![3]);
+        assert_eq!(modes(vec![1usize, 1, 2, 2].into_iter()), vec![1, 2]);
+        let vec: Vec<u32> = vec![];
+        assert_eq!(modes(vec.into_iter()), vec![]);
     }
 
     #[test]
