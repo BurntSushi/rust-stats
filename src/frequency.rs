@@ -3,6 +3,7 @@ use std::fmt;
 use std::hash::Hash;
 use std::iter::{FromIterator, IntoIterator};
 use std::default::Default;
+use std::collections::hash_map::Keys;
 
 use Commute;
 
@@ -78,6 +79,11 @@ impl<T: Eq + Hash> Frequencies<T> {
     pub fn len(&self) -> usize {
         self.data.len()
     }
+
+    /// Return an iterator over the unique values of the data.
+    pub fn unique_values(&self) -> UniqueValues<T> {
+        UniqueValues { data_keys: self.data.keys() }
+    }
 }
 
 impl<T: Eq + Hash> Commute for Frequencies<T> {
@@ -113,9 +119,22 @@ impl<T: Eq + Hash> Extend<T> for Frequencies<T> {
     }
 }
 
+/// An iterator over unique values in a frequencies count.
+pub struct UniqueValues<'a, K> {
+    data_keys: Keys<'a, K, u64>
+}
+
+impl <'a, K> Iterator for UniqueValues<'a, K> {
+    type Item = &'a K;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.data_keys.next()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::Frequencies;
+    use std::iter::FromIterator;
 
     #[test]
     fn ranked() {
@@ -123,5 +142,13 @@ mod test {
         counts.extend(vec![1usize, 1, 2, 2, 2, 2, 2, 3, 4, 4, 4].into_iter());
         assert_eq!(counts.most_frequent()[0], (&2, 5));
         assert_eq!(counts.least_frequent()[0], (&3, 1));
+    }
+
+    #[test]
+    fn unique_values() {
+        let freqs = Frequencies::from_iter(vec![1, 1, 2, 2, 2, 3, 4, 4, 4]);
+        let mut unique: Vec<isize> = freqs.unique_values().map(|&x| x).collect();
+        unique.sort();
+        assert_eq!(unique, vec![1, 2, 3, 4]);
     }
 }

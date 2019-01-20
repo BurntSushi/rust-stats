@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use std::hash;
 use num_traits::ToPrimitive;
 
-pub use frequency::Frequencies;
+pub use frequency::{Frequencies, UniqueValues};
 pub use minmax::MinMax;
 pub use online::{OnlineStats, stddev, variance, mean};
 pub use unsorted::{Unsorted, median, mode, modes};
