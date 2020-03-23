@@ -29,7 +29,7 @@ pub fn mean<I>(it: I) -> f64
 pub struct OnlineStats {
     size: u64,
     mean: f64,
-    variance: f64,
+    q: f64,
 }
 
 impl OnlineStats {
@@ -52,12 +52,12 @@ impl OnlineStats {
 
     /// Return the current standard deviation.
     pub fn stddev(&self) -> f64 {
-        self.variance.sqrt()
+        self.variance().sqrt()
     }
 
     /// Return the current variance.
     pub fn variance(&self) -> f64 {
-        self.variance
+        self.q / (self.size as f64)
     }
 
     /// Add a new sample.
@@ -66,12 +66,11 @@ impl OnlineStats {
         // Taken from: http://goo.gl/JKeqvj
         // See also: http://goo.gl/qTtI3V
         let oldmean = self.mean;
-        let prevq = self.variance * (self.size as f64);
-
         self.size += 1;
-        self.mean += (sample - oldmean) / (self.size as f64);
-        self.variance = (prevq + (sample - oldmean) * (sample - self.mean))
-                        / (self.size as f64);
+        let delta = sample - oldmean;
+        self.mean += delta / (self.size as f64);
+        let delta2 = sample - self.mean;
+        self.q += delta * delta2;
     }
 
     /// Add a new NULL value to the population.
@@ -92,14 +91,10 @@ impl Commute for OnlineStats {
         // Taken from: http://goo.gl/iODi28
         let (s1, s2) = (self.size as f64, v.size as f64);
         let meandiffsq = (self.mean - v.mean) * (self.mean - v.mean);
-        let mean = ((s1 * self.mean) + (s2 * v.mean)) / (s1 + s2);
-        let var = (((s1 * self.variance) + (s2 * v.variance))
-                   / (s1 + s2))
-                  +
-                  ((s1 * s2 * meandiffsq) / ((s1 + s2) * (s1 + s2)));
+
         self.size += v.size;
-        self.mean = mean;
-        self.variance = var;
+        self.mean = ((s1 * self.mean) + (s2 * v.mean)) / (s1 + s2);
+        self.q += v.q + meandiffsq * s1 * s2 / (s1 + s2);
     }
 }
 
@@ -108,7 +103,7 @@ impl Default for OnlineStats {
         OnlineStats {
             size: 0,
             mean: 0.0,
-            variance: 0.0,
+            q: 0.0,
         }
     }
 }
