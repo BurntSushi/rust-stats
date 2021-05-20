@@ -7,7 +7,7 @@ use num_traits::ToPrimitive;
 pub use frequency::Frequencies;
 pub use minmax::MinMax;
 pub use online::{OnlineStats, stddev, variance, mean};
-pub use unsorted::{Unsorted, median, mode, modes};
+pub use unsorted::{Unsorted, median, quartiles, mode, modes};
 
 /// Partial wraps a type that satisfies `PartialOrd` and implements `Ord`.
 ///
