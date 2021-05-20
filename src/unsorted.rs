@@ -12,6 +12,14 @@ pub fn median<I>(it: I) -> Option<f64>
     it.collect::<Unsorted<_>>().median()
 }
 
+/// Compute the exact 1-, 2-, and 3-quartiles (Q1, Q2 a.k.a. median, and Q3) on a stream of data.
+///
+/// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
+pub fn quartiles<I>(it: I) -> Option<(f64, f64, f64)>
+        where I: Iterator, <I as Iterator>::Item: PartialOrd + ToPrimitive {
+    it.collect::<Unsorted<_>>().quartiles()
+}
+
 /// Compute the exact mode on a stream of data.
 ///
 /// (This has time complexity `O(nlogn)` and space complexity `O(n)`.)
@@ -57,6 +65,80 @@ fn median_on_sorted<T>(data: &[T]) -> Option<f64>
         len => {
             data[len / 2].to_f64().unwrap()
         }
+    })
+}
+
+fn quartiles_on_sorted<T>(data: &[T]) -> Option<(f64, f64, f64)>
+        where T: PartialOrd + ToPrimitive {
+    Some(match data.len() {
+        0..=2 => return None,
+        3 => (data[0].to_f64().unwrap(),
+              data[1].to_f64().unwrap(),
+              data[2].to_f64().unwrap()),
+        len => {
+            let r = len % 4;
+            let k = (len - r) / 4;
+            match r {
+                // Let data = {x_i}_{i=0..4k} where k is positive integer.
+                // Median q2 = (x_{2k-1} + x_{2k}) / 2.
+                // If we divide data into two parts {x_i < q2} as L and
+                // {x_i > q2} as R, #L == #R == 2k holds true. Thus,
+                // q1 = (x_{k-1} + x_{k}) / 2 and q3 = (x_{3k-1} + x_{3k}) / 2.
+                0 => {
+                    let (q1_l, q1_r, q2_l, q2_r, q3_l, q3_r) = (
+                        data[k - 1].to_f64().unwrap(),
+                        data[k].to_f64().unwrap(),
+                        data[2 * k - 1].to_f64().unwrap(),
+                        data[2 * k].to_f64().unwrap(),
+                        data[3 * k - 1].to_f64().unwrap(),
+                        data[3 * k].to_f64().unwrap()
+                    );
+                    ((q1_l + q1_r) / 2., (q2_l + q2_r) / 2., (q3_l + q3_r) / 2.)
+                },
+                // Let data = {x_i}_{i=0..4k+1} where k is positive integer.
+                // Median q2 = x_{2k}.
+                // If we divide data other than q2 into two parts {x_i < q2}
+                // as L and {x_i > q2} as R, #L == #R == 2k holds true. Thus,
+                // q1 = (x_{k-1} + x_{k}) / 2 and q3 = (x_{3k} + x_{3k+1}) / 2.
+                1 => {
+                    let (q1_l, q1_r, q2, q3_l, q3_r) = (
+                        data[k - 1].to_f64().unwrap(),
+                        data[k].to_f64().unwrap(),
+                        data[2 * k].to_f64().unwrap(),
+                        data[3 * k].to_f64().unwrap(),
+                        data[3 * k + 1].to_f64().unwrap()
+                    );
+                    ((q1_l + q1_r) / 2., q2, (q3_l + q3_r) / 2.)
+                },
+                // Let data = {x_i}_{i=0..4k+2} where k is positive integer.
+                // Median q2 = (x_{(2k+1)-1} + x_{2k+1}) / 2.
+                // If we divide data into two parts {x_i < q2} as L and
+                // {x_i > q2} as R, it's true that #L == #R == 2k+1.
+                // Thus, q1 = x_{k} and q3 = x_{3k+1}.
+                2 => {
+                    let (q1, q2_l, q2_r, q3) = (
+                        data[k].to_f64().unwrap(),
+                        data[2 * k].to_f64().unwrap(),
+                        data[2 * k + 1].to_f64().unwrap(),
+                        data[3 * k + 1].to_f64().unwrap()
+                    );
+                    (q1, (q2_l + q2_r) / 2., q3)
+                },
+                // Let data = {x_i}_{i=0..4k+3} where k is positive integer.
+                // Median q2 = x_{2k+1}.
+                // If we divide data other than q2 into two parts {x_i < q2}
+                // as L and {x_i > q2} as R, #L == #R == 2k+1 holds true.
+                // Thus, q1 = x_{k} and q3 = x_{3k+2}.
+                _ => {
+                    let (q1, q2, q3) = (
+                        data[k].to_f64().unwrap(),
+                        data[2 * k + 1].to_f64().unwrap(),
+                        data[3 * k + 2].to_f64().unwrap()
+                    );
+                    (q1, q2, q3)
+                },
+            }
+        },
     })
 }
 
@@ -199,6 +281,14 @@ impl<T: PartialOrd + ToPrimitive> Unsorted<T> {
     }
 }
 
+impl<T: PartialOrd + ToPrimitive> Unsorted<T> {
+    /// Returns the quartiles of the data.
+    pub fn quartiles(&mut self) -> Option<(f64, f64, f64)> {
+        self.sort();
+        quartiles_on_sorted(&*self.data)
+    }
+}
+
 impl<T: PartialOrd> Commute for Unsorted<T> {
     fn merge(&mut self, v: Unsorted<T>) {
         self.dirtied();
@@ -232,7 +322,7 @@ impl<T: PartialOrd> Extend<T> for Unsorted<T> {
 
 #[cfg(test)]
 mod test {
-    use super::{median, mode, modes};
+    use super::{median, quartiles, mode, modes};
 
     #[test]
     fn median_stream() {
@@ -282,5 +372,27 @@ mod test {
         assert_eq!(modes(vec![3_f64, 3.0, 3.0, 3.0].into_iter()), vec![3.0]);
         assert_eq!(modes(vec![3_f64, 3.0, 4.0, 4.0].into_iter()), vec![3.0, 4.0]);
         assert_eq!(modes(vec![1_f64, 1.0, 2.0, 3.0, 3.0].into_iter()), vec![1.0, 3.0]);
+    }
+
+    #[test]
+    fn quartiles_stream() {
+        assert_eq!(quartiles(vec![3usize, 5, 7].into_iter()), Some((3., 5., 7.)));
+        assert_eq!(quartiles(vec![3usize, 5, 7, 9].into_iter()), Some((4., 6., 8.)));
+        assert_eq!(quartiles(vec![1usize, 2, 7, 11].into_iter()), Some((1.5, 4.5, 9.)));
+        assert_eq!(quartiles(vec![3usize, 5, 7, 9, 12].into_iter()), Some((4., 7., 10.5)));
+        assert_eq!(quartiles(vec![2usize, 2, 3, 8, 10].into_iter()), Some((2., 3., 9.)));
+        assert_eq!(quartiles(vec![3usize, 5, 7, 9, 12, 20].into_iter()), Some((5., 8., 12.)));
+        assert_eq!(quartiles(vec![0usize, 2, 4, 8, 10, 11].into_iter()), Some((2., 6., 10.)));
+        assert_eq!(quartiles(vec![3usize, 5, 7, 9, 12, 20, 21].into_iter()), Some((5., 9., 20.)));
+        assert_eq!(quartiles(vec![1usize, 5, 6, 6, 7, 10, 19].into_iter()), Some((5., 6., 10.)));
+    }
+
+    #[test]
+    fn quartiles_floats() {
+        assert_eq!(quartiles(vec![3_f64, 5., 7.].into_iter()), Some((3., 5., 7.)));
+        assert_eq!(quartiles(vec![3_f64, 5., 7., 9.].into_iter()), Some((4., 6., 8.)));
+        assert_eq!(quartiles(vec![3_f64, 5., 7., 9., 12.].into_iter()), Some((4., 7., 10.5)));
+        assert_eq!(quartiles(vec![3_f64, 5., 7., 9., 12., 20.].into_iter()), Some((5., 8., 12.)));
+        assert_eq!(quartiles(vec![3_f64, 5., 7., 9., 12., 20., 21.].into_iter()), Some((5., 9., 20.)));
     }
 }
