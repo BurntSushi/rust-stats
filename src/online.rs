@@ -63,8 +63,8 @@ impl OnlineStats {
     /// Add a new sample.
     pub fn add<T: ToPrimitive>(&mut self, sample: T) {
         let sample = sample.to_f64().unwrap();
-        // Taken from: http://goo.gl/JKeqvj
-        // See also: http://goo.gl/qTtI3V
+        // Taken from: https://goo.gl/JKeqvj
+        // See also: https://goo.gl/qTtI3V
         let oldmean = self.mean;
         let prevq = self.variance * (self.size as f64);
 
@@ -89,7 +89,7 @@ impl OnlineStats {
 
 impl Commute for OnlineStats {
     fn merge(&mut self, v: OnlineStats) {
-        // Taken from: http://goo.gl/iODi28
+        // Taken from: https://goo.gl/iODi28
         let (s1, s2) = (self.size as f64, v.size as f64);
         let meandiffsq = (self.mean - v.mean) * (self.mean - v.mean);
         let mean = ((s1 * self.mean) + (s2 * v.mean)) / (s1 + s2);
