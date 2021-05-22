@@ -3,9 +3,9 @@ some support for computing them efficiently on *streams* of data. The intent
 is to permit parallel computation of statistics on large data sets.
 
 [![Build status](https://api.travis-ci.org/BurntSushi/rust-stats.png)](https://travis-ci.org/BurntSushi/rust-stats)
-[![](http://meritbadge.herokuapp.com/streaming-stats)](https://crates.io/crates/streaming-stats)
+[![](https://meritbadge.herokuapp.com/streaming-stats)](https://crates.io/crates/streaming-stats)
 
-Dual-licensed under MIT or the [UNLICENSE](http://unlicense.org).
+Dual-licensed under MIT or the [UNLICENSE](https://unlicense.org/).
 
 
 ### Documentation
