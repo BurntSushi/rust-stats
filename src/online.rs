@@ -8,19 +8,28 @@ use Commute;
 
 /// Compute the standard deviation of a stream in constant space.
 pub fn stddev<I>(it: I) -> f64
-        where I: Iterator, <I as Iterator>::Item: ToPrimitive {
+where
+    I: Iterator,
+    <I as Iterator>::Item: ToPrimitive,
+{
     it.collect::<OnlineStats>().stddev()
 }
 
 /// Compute the variance of a stream in constant space.
 pub fn variance<I>(it: I) -> f64
-        where I: Iterator, <I as Iterator>::Item: ToPrimitive {
+where
+    I: Iterator,
+    <I as Iterator>::Item: ToPrimitive,
+{
     it.collect::<OnlineStats>().variance()
 }
 
 /// Compute the mean of a stream in constant space.
 pub fn mean<I>(it: I) -> f64
-        where I: Iterator, <I as Iterator>::Item: ToPrimitive {
+where
+    I: Iterator,
+    <I as Iterator>::Item: ToPrimitive,
+{
     it.collect::<OnlineStats>().mean()
 }
 
@@ -70,8 +79,7 @@ impl OnlineStats {
 
         self.size += 1;
         self.mean += (sample - oldmean) / (self.size as f64);
-        self.variance = (prevq + (sample - oldmean) * (sample - self.mean))
-                        / (self.size as f64);
+        self.variance = (prevq + (sample - oldmean) * (sample - self.mean)) / (self.size as f64);
     }
 
     /// Add a new NULL value to the population.
@@ -93,10 +101,8 @@ impl Commute for OnlineStats {
         let (s1, s2) = (self.size as f64, v.size as f64);
         let meandiffsq = (self.mean - v.mean) * (self.mean - v.mean);
         let mean = ((s1 * self.mean) + (s2 * v.mean)) / (s1 + s2);
-        let var = (((s1 * self.variance) + (s2 * v.variance))
-                   / (s1 + s2))
-                  +
-                  ((s1 * s2 * meandiffsq) / ((s1 + s2) * (s1 + s2)));
+        let var = (((s1 * self.variance) + (s2 * v.variance)) / (s1 + s2))
+            + ((s1 * s2 * meandiffsq) / ((s1 + s2) * (s1 + s2)));
         self.size += v.size;
         self.mean = mean;
         self.variance = var;
@@ -120,7 +126,7 @@ impl fmt::Debug for OnlineStats {
 }
 
 impl<T: ToPrimitive> FromIterator<T> for OnlineStats {
-    fn from_iter<I: IntoIterator<Item=T>>(it: I) -> OnlineStats {
+    fn from_iter<I: IntoIterator<Item = T>>(it: I) -> OnlineStats {
         let mut v = OnlineStats::new();
         v.extend(it);
         v
@@ -128,7 +134,7 @@ impl<T: ToPrimitive> FromIterator<T> for OnlineStats {
 }
 
 impl<T: ToPrimitive> Extend<T> for OnlineStats {
-    fn extend<I: IntoIterator<Item=T>>(&mut self, it: I) {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, it: I) {
         for sample in it {
             self.add(sample)
         }
@@ -137,8 +143,8 @@ impl<T: ToPrimitive> Extend<T> for OnlineStats {
 
 #[cfg(test)]
 mod test {
-    use {Commute, merge_all};
     use super::OnlineStats;
+    use {merge_all, Commute};
 
     #[test]
     fn stddev() {
@@ -155,15 +161,16 @@ mod test {
     #[test]
     fn stddev_many() {
         // TODO: Convert this to a quickcheck test.
-        let expected = OnlineStats::from_slice(
-            &[1usize, 2, 3, 2, 4, 6, 3, 6, 9]);
+        let expected = OnlineStats::from_slice(&[1usize, 2, 3, 2, 4, 6, 3, 6, 9]);
 
         let vars = vec![
             OnlineStats::from_slice(&[1usize, 2, 3]),
             OnlineStats::from_slice(&[2usize, 4, 6]),
             OnlineStats::from_slice(&[3usize, 6, 9]),
         ];
-        assert_eq!(expected.stddev(),
-                   merge_all(vars.into_iter()).unwrap().stddev());
+        assert_eq!(
+            expected.stddev(),
+            merge_all(vars.into_iter()).unwrap().stddev()
+        );
     }
 }

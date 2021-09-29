@@ -86,7 +86,7 @@ impl<T: fmt::Debug> fmt::Debug for MinMax<T> {
 }
 
 impl<T: PartialOrd + Clone> FromIterator<T> for MinMax<T> {
-    fn from_iter<I: IntoIterator<Item=T>>(it: I) -> MinMax<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(it: I) -> MinMax<T> {
         let mut v = MinMax::new();
         v.extend(it);
         v
@@ -94,7 +94,7 @@ impl<T: PartialOrd + Clone> FromIterator<T> for MinMax<T> {
 }
 
 impl<T: PartialOrd + Clone> Extend<T> for MinMax<T> {
-    fn extend<I: IntoIterator<Item=T>>(&mut self, it: I) {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, it: I) {
         for sample in it {
             self.add(sample);
         }
@@ -108,8 +108,7 @@ mod test {
 
     #[test]
     fn minmax() {
-        let minmax: MinMax<u32> =
-            vec![1u32, 4, 2, 3, 10].into_iter().collect();
+        let minmax: MinMax<u32> = vec![1u32, 4, 2, 3, 10].into_iter().collect();
         assert_eq!(minmax.min(), Some(&1u32));
         assert_eq!(minmax.max(), Some(&10u32));
     }

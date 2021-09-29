@@ -1,8 +1,8 @@
-use std::collections::hash_map::{HashMap, Entry};
+use std::collections::hash_map::{Entry, HashMap};
+use std::default::Default;
 use std::fmt;
 use std::hash::Hash;
 use std::iter::{FromIterator, IntoIterator};
-use std::default::Default;
 
 use Commute;
 
@@ -27,8 +27,12 @@ impl<T: Eq + Hash> Frequencies<T> {
     /// Add a sample to the frequency table.
     pub fn add(&mut self, v: T) {
         match self.data.entry(v) {
-            Entry::Vacant(count) => { count.insert(1); },
-            Entry::Occupied(mut count) => { *count.get_mut() += 1; },
+            Entry::Vacant(count) => {
+                count.insert(1);
+            }
+            Entry::Occupied(mut count) => {
+                *count.get_mut() += 1;
+            }
         }
     }
 
@@ -57,9 +61,7 @@ impl<T: Eq + Hash> Frequencies<T> {
     /// Return a `Vec` of elements and their corresponding counts in
     /// descending order.
     pub fn most_frequent(&self) -> Vec<(&T, u64)> {
-        let mut counts: Vec<_> = self.data.iter()
-                                          .map(|(k, &v)| (k, v))
-                                          .collect();
+        let mut counts: Vec<_> = self.data.iter().map(|(k, &v)| (k, v)).collect();
         counts.sort_by(|&(_, c1), &(_, c2)| c2.cmp(&c1));
         counts
     }
@@ -67,9 +69,7 @@ impl<T: Eq + Hash> Frequencies<T> {
     /// Return a `Vec` of elements and their corresponding counts in
     /// ascending order.
     pub fn least_frequent(&self) -> Vec<(&T, u64)> {
-        let mut counts: Vec<_> = self.data.iter()
-                                          .map(|(k, &v)| (k, v))
-                                          .collect();
+        let mut counts: Vec<_> = self.data.iter().map(|(k, &v)| (k, v)).collect();
         counts.sort_by(|&(_, c1), &(_, c2)| c1.cmp(&c2));
         counts
     }
@@ -84,8 +84,12 @@ impl<T: Eq + Hash> Commute for Frequencies<T> {
     fn merge(&mut self, v: Frequencies<T>) {
         for (k, v2) in v.data.into_iter() {
             match self.data.entry(k) {
-                Entry::Vacant(v1) => { v1.insert(v2); }
-                Entry::Occupied(mut v1) => { *v1.get_mut() += v2; }
+                Entry::Vacant(v1) => {
+                    v1.insert(v2);
+                }
+                Entry::Occupied(mut v1) => {
+                    *v1.get_mut() += v2;
+                }
             }
         }
     }
@@ -93,12 +97,14 @@ impl<T: Eq + Hash> Commute for Frequencies<T> {
 
 impl<T: Eq + Hash> Default for Frequencies<T> {
     fn default() -> Frequencies<T> {
-        Frequencies { data: HashMap::with_capacity(100000) }
+        Frequencies {
+            data: HashMap::with_capacity(100000),
+        }
     }
 }
 
 impl<T: Eq + Hash> FromIterator<T> for Frequencies<T> {
-    fn from_iter<I: IntoIterator<Item=T>>(it: I) -> Frequencies<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(it: I) -> Frequencies<T> {
         let mut v = Frequencies::new();
         v.extend(it);
         v
@@ -106,7 +112,7 @@ impl<T: Eq + Hash> FromIterator<T> for Frequencies<T> {
 }
 
 impl<T: Eq + Hash> Extend<T> for Frequencies<T> {
-    fn extend<I: IntoIterator<Item=T>>(&mut self, it: I) {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, it: I) {
         for sample in it {
             self.add(sample);
         }
