@@ -2,7 +2,6 @@ extern crate num_traits;
 
 use num_traits::ToPrimitive;
 use std::cmp::Ordering;
-use std::hash;
 
 pub use frequency::Frequencies;
 pub use minmax::MinMax;
@@ -13,14 +12,20 @@ pub use unsorted::{median, mode, modes, Unsorted};
 ///
 /// This allows types like `f64` to be used in data structures that require
 /// `Ord`. When an ordering is not defined, an arbitrary order is returned.
-#[derive(Clone, PartialEq, PartialOrd)]
+#[derive(Clone, PartialEq, Hash)]
 struct Partial<T>(pub T);
 
 impl<T: PartialEq> Eq for Partial<T> {}
 
+impl<T: PartialOrd> PartialOrd for Partial<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 impl<T: PartialOrd> Ord for Partial<T> {
-    fn cmp(&self, other: &Partial<T>) -> Ordering {
-        self.partial_cmp(other).unwrap_or(Ordering::Less)
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.partial_cmp(&other.0).unwrap_or(Ordering::Less)
     }
 }
 
@@ -65,12 +70,6 @@ impl<T: ToPrimitive> ToPrimitive for Partial<T> {
     }
 }
 
-impl<T: hash::Hash> hash::Hash for Partial<T> {
-    fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        self.0.hash(state);
-    }
-}
-
 /// Defines an interface for types that have an identity and can be commuted.
 ///
 /// The value returned by `Default::default` must be its identity with respect
@@ -107,7 +106,9 @@ impl<T: Commute> Commute for Option<T> {
                 *self = other;
             }
             Some(ref mut v1) => {
-                other.map(|v2| v1.merge(v2));
+                if let Some(v2) = other {
+                    v1.merge(v2)
+                }
             }
         }
     }

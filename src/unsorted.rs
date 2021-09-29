@@ -92,14 +92,19 @@ where
             next_count = 0;
         }
 
-        if next_count > mode_count {
-            mode = next;
-            mode_count = next_count;
-            next = None;
-            next_count = 0;
-        } else if next_count == mode_count {
-            mode = None;
-            mode_count = 0usize;
+        match next_count.cmp(&mode_count) {
+            std::cmp::Ordering::Greater => {
+                mode = next;
+                mode_count = next_count;
+                next = None;
+                next_count = 0;
+            }
+            std::cmp::Ordering::Equal => {
+                mode = None;
+                mode_count = 0usize;
+            }
+
+            std::cmp::Ordering::Less => {}
         }
     }
     mode
@@ -115,7 +120,7 @@ where
     let mut values = vec![];
     let mut count = 0;
     for x in it {
-        if values.len() == 0 {
+        if values.is_empty() {
             values.push(x);
             modes.push(1);
             continue;
@@ -167,6 +172,11 @@ impl<T: PartialOrd> Unsorted<T> {
     /// Return the number of data points.
     pub fn len(&self) -> usize {
         self.data.len()
+    }
+
+    /// Check if we have any data points.
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
     }
 
     fn sort(&mut self) {

@@ -49,15 +49,20 @@ impl<T: PartialOrd + Clone> MinMax<T> {
     pub fn len(&self) -> usize {
         self.len as usize
     }
+
+    /// Check if there was at least one sample.
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
 }
 
 impl<T: PartialOrd> Commute for MinMax<T> {
     fn merge(&mut self, v: MinMax<T>) {
         self.len += v.len;
-        if self.min.is_none() || (!v.min.is_none() && v.min < self.min) {
+        if self.min.is_none() || (v.min.is_some() && v.min < self.min) {
             self.min = v.min;
         }
-        if self.max.is_none() || (!v.max.is_none() && v.max > self.max) {
+        if self.max.is_none() || (v.max.is_some() && v.max > self.max) {
             self.max = v.max;
         }
     }

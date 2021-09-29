@@ -93,6 +93,11 @@ impl OnlineStats {
     pub fn len(&self) -> usize {
         self.size as usize
     }
+
+    /// Check if we have recorded any data points.
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
+    }
 }
 
 impl Commute for OnlineStats {
@@ -147,6 +152,7 @@ mod test {
     use {merge_all, Commute};
 
     #[test]
+    #[allow(clippy::float_cmp)]
     fn stddev() {
         // TODO: Convert this to a quickcheck test.
         let expected = OnlineStats::from_slice(&[1usize, 2, 3, 2, 4, 6]);
@@ -159,6 +165,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::float_cmp)]
     fn stddev_many() {
         // TODO: Convert this to a quickcheck test.
         let expected = OnlineStats::from_slice(&[1usize, 2, 3, 2, 4, 6, 3, 6, 9]);

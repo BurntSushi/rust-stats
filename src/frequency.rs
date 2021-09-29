@@ -38,7 +38,7 @@ impl<T: Eq + Hash> Frequencies<T> {
 
     /// Return the number of occurrences of `v` in the data.
     pub fn count(&self, v: &T) -> u64 {
-        self.data.get(v).map(|&v| v).unwrap_or(0)
+        self.data.get(v).cloned().unwrap_or(0)
     }
 
     /// Return the cardinality (number of unique elements) in the data.
@@ -49,9 +49,7 @@ impl<T: Eq + Hash> Frequencies<T> {
     /// Returns the mode if one exists.
     pub fn mode(&self) -> Option<&T> {
         let counts = self.most_frequent();
-        if counts.is_empty() {
-            None
-        } else if counts.len() >= 2 && counts[0].1 == counts[1].1 {
+        if counts.is_empty() || counts.len() >= 2 && counts[0].1 == counts[1].1 {
             None
         } else {
             Some(counts[0].0)
@@ -77,6 +75,11 @@ impl<T: Eq + Hash> Frequencies<T> {
     /// Returns the cardinality of the data.
     pub fn len(&self) -> usize {
         self.data.len()
+    }
+
+    /// Check if we have any data.
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
     }
 }
 
