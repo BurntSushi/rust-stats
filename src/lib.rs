@@ -1,5 +1,9 @@
 extern crate num_traits;
 
+#[cfg(feature = "serde")]
+#[macro_use]
+extern crate serde;
+
 use num_traits::ToPrimitive;
 use std::cmp::Ordering;
 
@@ -12,7 +16,8 @@ pub use unsorted::{median, mode, modes, Unsorted};
 ///
 /// This allows types like `f64` to be used in data structures that require
 /// `Ord`. When an ordering is not defined, an arbitrary order is returned.
-#[derive(Clone, PartialEq, Hash)]
+#[derive(Clone, Debug, PartialEq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 struct Partial<T>(pub T);
 
 impl<T: PartialEq> Eq for Partial<T> {}

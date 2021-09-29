@@ -34,7 +34,8 @@ where
 }
 
 /// Online state for computing mean, variance and standard deviation.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct OnlineStats {
     size: u64,
     mean: f64,

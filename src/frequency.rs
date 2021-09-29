@@ -8,7 +8,8 @@ use Commute;
 
 /// A commutative data structure for exact frequency counts.
 #[derive(Clone)]
-pub struct Frequencies<T> {
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct Frequencies<T: Eq + Hash> {
     data: HashMap<T, u64>,
 }
 

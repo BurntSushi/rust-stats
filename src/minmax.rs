@@ -7,7 +7,8 @@ use Commute;
 /// A commutative data structure for tracking minimum and maximum values.
 ///
 /// This also stores the number of samples.
-#[derive(Clone)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct MinMax<T> {
     len: u64,
     min: Option<T>,

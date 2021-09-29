@@ -7,7 +7,9 @@ use num_traits::ToPrimitive;
 use {Commute, Partial};
 
 pub fn median_on_sorted<T>(data: &[T]) -> Option<f64>
-        where T: PartialOrd + ToPrimitive {
+where
+    T: PartialOrd + ToPrimitive,
+{
     Some(match data.len() {
         0 => return None,
         1 => data[0].to_f64().unwrap(),
@@ -16,14 +18,15 @@ pub fn median_on_sorted<T>(data: &[T]) -> Option<f64>
             let v2 = data[len / 2].to_f64().unwrap();
             (v1 + v2) / 2.0
         }
-        len => {
-            data[len / 2].to_f64().unwrap()
-        }
+        len => data[len / 2].to_f64().unwrap(),
     })
 }
 
 pub fn mode_on_sorted<T, I>(it: I) -> Option<T>
-        where T: PartialOrd, I: Iterator<Item=T> {
+where
+    T: PartialOrd,
+    I: Iterator<Item = T>,
+{
     // This approach to computing the mode works very nicely when the
     // number of samples is large and is close to its cardinality.
     // In other cases, a hashmap would be much better.
@@ -60,7 +63,8 @@ pub fn mode_on_sorted<T, I>(it: I) -> Option<T>
 /// Note that this works on types that do not define a total ordering like
 /// `f32` and `f64`. Then an ordering is not defined, an arbitrary order
 /// is returned.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Sorted<T> {
     data: BinaryHeap<Partial<T>>,
 }
@@ -110,11 +114,15 @@ impl<T: PartialOrd> Commute for Sorted<T> {
 }
 
 impl<T: PartialOrd> Default for Sorted<T> {
-    fn default() -> Sorted<T> { Sorted { data: BinaryHeap::new() } }
+    fn default() -> Sorted<T> {
+        Sorted {
+            data: BinaryHeap::new(),
+        }
+    }
 }
 
 impl<T: PartialOrd> FromIterator<T> for Sorted<T> {
-    fn from_iter<I: IntoIterator<Item=T>>(it: I) -> Sorted<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(it: I) -> Sorted<T> {
         let mut v = Sorted::new();
         v.extend(it);
         v
@@ -122,23 +130,29 @@ impl<T: PartialOrd> FromIterator<T> for Sorted<T> {
 }
 
 impl<T: PartialOrd> Extend<T> for Sorted<T> {
-    fn extend<I: IntoIterator<Item=T>>(&mut self, it: I) {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, it: I) {
         self.data.extend(it.into_iter().map(Partial))
     }
 }
 
 #[cfg(test)]
 mod test {
-    use num::ToPrimitive;
     use super::Sorted;
+    use num::ToPrimitive;
 
     fn median<T, I>(it: I) -> Option<f64>
-       where T: PartialOrd + ToPrimitive + Clone, I: Iterator<Item=T> {
+    where
+        T: PartialOrd + ToPrimitive + Clone,
+        I: Iterator<Item = T>,
+    {
         it.collect::<Sorted<T>>().median()
     }
 
     fn mode<T, I>(it: I) -> Option<T>
-       where T: PartialOrd + Clone, I: Iterator<Item=T> {
+    where
+        T: PartialOrd + Clone,
+        I: Iterator<Item = T>,
+    {
         it.collect::<Sorted<T>>().mode()
     }
 
