@@ -8,7 +8,7 @@ homepage = "https://github.com/BurntSushi/rust-stats"
 repository = "https://github.com/BurntSushi/rust-stats"
 readme = "README.md"
 keywords = ["statistics", "stats", "median", "mean", "stddev"]
-license = "Unlicense/MIT"
+license = "Unlicense OR MIT"
 
 [lib]
 name = "stats"
